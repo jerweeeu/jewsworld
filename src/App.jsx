@@ -43,7 +43,7 @@ function AuthPanel({ onClose, onDone }) {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim(), password
         });
-        if (error) throw new Error('電郵或密碼不正確，請再試一次。');
+        if (error) throw error;
         onDone(data.user);
       }
     } catch (err) { setMessage(errorText(err)); }
