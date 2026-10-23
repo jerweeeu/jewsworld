@@ -1079,9 +1079,7 @@ function App() {
                             loading="lazy"
                            />
 
-                           <span className="photo-view-hint">
-                             View full photo ↗
-                           </span>
+
                          </button>
 
                          <span className="photo-date">
