@@ -1065,7 +1065,7 @@ button:disabled {
 
 .welcome-kicker {
   color: #718178;
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.18em;
   font-family: "Jewsworld", sans-serif;
@@ -1604,4 +1604,15 @@ button:disabled {
     display: inline;
     margin-left: 3px;
   }
+  .day-view .section-heading .eyebrow {
+    font-size: 14px;
+  }
+  /* Handwriting font for selected headings */
+.brand small,
+.intro .eyebrow,
+.intro p,
+.calendar-head .eyebrow {
+  font-family: "Jewsworld", cursive;
 }
+}
+  
