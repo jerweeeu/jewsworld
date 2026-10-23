@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  addDays,
   addMonths,
+  addWeeks,
+  addYears,
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
@@ -9,7 +12,10 @@ import {
   isToday,
   startOfMonth,
   startOfWeek,
-  subMonths
+  subDays,
+  subMonths,
+  subWeeks,
+  subYears
 } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import {
@@ -112,9 +118,7 @@ function AuthPanel({ onClose, onDone }) {
           <X size={18} />
         </button>
 
-        <div className="auth-heading">
-          {mode === 'signup' && <h2>Create an account</h2>}
-        </div>
+        <h2 className="auth-title">{mode === 'login' ? 'Log in' : 'Create your account'}</h2>
 
         <form onSubmit={submit} className="stack">
           {mode === 'signup' && (
@@ -133,8 +137,8 @@ function AuthPanel({ onClose, onDone }) {
           )}
 
           <label className="auth-field-label">
+            <span className="sr-only">Email</span>
             <input
-              aria-label="Email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -145,8 +149,8 @@ function AuthPanel({ onClose, onDone }) {
           </label>
 
           <label className="auth-field-label">
+            <span className="sr-only">Password</span>
             <input
-              aria-label="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -211,6 +215,7 @@ function App() {
   const [month, setMonth] = useState(startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState(todayKey());
   const [view, setView] = useState('calendar');
+  const [calendarMode, setCalendarMode] = useState('Month');
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState({});
   const [busy, setBusy] = useState(false);
@@ -342,6 +347,39 @@ function App() {
 
     return eachDayOfInterval({ start, end });
   }, [month]);
+
+  const selectedDateObject = new Date(`${selectedDate}T12:00:00`);
+
+  const visibleCalendarDays = useMemo(() => {
+    if (calendarMode === 'Day') return [selectedDateObject];
+
+    if (calendarMode === 'Week') {
+      const start = startOfWeek(selectedDateObject, { weekStartsOn: 1 });
+      const end = endOfWeek(selectedDateObject, { weekStartsOn: 1 });
+      return eachDayOfInterval({ start, end });
+    }
+
+    return calendarDays;
+  }, [calendarMode, selectedDate, month, calendarDays]);
+
+  const navigateCalendar = (direction) => {
+    const baseDate = new Date(`${selectedDate}T12:00:00`);
+    const move = {
+      Day: direction === 'next' ? addDays : subDays,
+      Week: direction === 'next' ? addWeeks : subWeeks,
+      Month: direction === 'next' ? addMonths : subMonths,
+      Year: direction === 'next' ? addYears : subYears
+    }[calendarMode];
+
+    const nextDate = move(baseDate, 1);
+    setSelectedDate(format(nextDate, 'yyyy-MM-dd'));
+    setMonth(startOfMonth(nextDate));
+  };
+
+  const goToDate = (date) => {
+    setSelectedDate(format(date, 'yyyy-MM-dd'));
+    setMonth(startOfMonth(date));
+  };
 
   const selectedPosts = posts
     .filter((post) => post.entry_date === selectedDate)
@@ -557,9 +595,21 @@ function App() {
   if (!session) {
     return (
       <div className="welcome-screen">
+        <div className="welcome-brand">
+          <span className="welcome-brand-name">jewsworld</span>
+        </div>
+
         <main className="welcome-content">
-          <div className="welcome-kicker">{timeText} {dateText}</div>
-          <h1 className="welcome-title">Welcome to<br /><em>A New World</em></h1>
+          <div className="welcome-kicker">
+            {timeText} {dateText}
+          </div>
+
+          <h1 className="welcome-title">
+            welcome to
+            <br />
+            <em>a new world</em>
+          </h1>
+
           <p className="welcome-tagline">Let’s run through my daydream</p>
 
           <AuthPanel
@@ -568,7 +618,9 @@ function App() {
           />
         </main>
 
-        <div className="welcome-foot">Call Me If U Get Lost</div>
+        <div className="welcome-foot">
+          call me if u get lost
+        </div>
       </div>
     );
   }
@@ -614,119 +666,132 @@ function App() {
               </p>
             </section>
 
-            <section className="calendar-card">
+            <section className={`calendar-card calendar-mode-${calendarMode.toLowerCase()}`}>
               <div className="calendar-head">
                 <div>
                   <div className="eyebrow">YOUR MEMORY CALENDAR</div>
-                  <h2>{format(month, 'MMMM yyyy', { locale: enUS })}</h2>
+                  <h2>
+                    {calendarMode === 'Day'
+                      ? format(selectedDateObject, 'EEEE, MMMM d, yyyy', { locale: enUS })
+                      : calendarMode === 'Week'
+                        ? `${format(startOfWeek(selectedDateObject, { weekStartsOn: 1 }), 'MMM d')} – ${format(endOfWeek(selectedDateObject, { weekStartsOn: 1 }), 'MMM d, yyyy')}`
+                        : calendarMode === 'Year'
+                          ? format(month, 'yyyy')
+                          : format(month, 'MMMM yyyy', { locale: enUS })}
+                  </h2>
                 </div>
 
                 <div className="date-selectors">
                   <label className="date-select">
                     <span>Year</span>
-
                     <select
                       aria-label="Select year"
                       value={month.getFullYear()}
-                      onChange={(e) =>
-                        setMonth(
-                          new Date(
-                            Number(e.target.value),
-                            month.getMonth(),
-                            1
-                          )
-                        )
-                      }
+                      onChange={(e) => {
+                        const next = new Date(Number(e.target.value), month.getMonth(), 1, 12);
+                        setMonth(startOfMonth(next));
+                        setSelectedDate(format(next, 'yyyy-MM-dd'));
+                      }}
                     >
-                      {Array.from(
-                        { length: 51 },
-                        (_, i) => new Date().getFullYear() - 25 + i
-                      ).map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
+                      {Array.from({ length: 101 }, (_, i) => new Date().getFullYear() - 50 + i).map((year) => (
+                        <option key={year} value={year}>{year}</option>
                       ))}
                     </select>
                   </label>
 
-                  <label className="date-select">
-                    <span>Month</span>
-
-                    <select
-                      aria-label="Select month"
-                      value={month.getMonth()}
-                      onChange={(e) =>
-                        setMonth(
-                          new Date(
-                            month.getFullYear(),
-                            Number(e.target.value),
-                            1
-                          )
-                        )
-                      }
-                    >
-                      {Array.from({ length: 12 }, (_, i) => (
-                        <option key={i} value={i}>
-                          {format(new Date(2000, i, 1), 'MMMM', {
-                            locale: enUS
-                          })}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  {calendarMode !== 'Year' && (
+                    <label className="date-select">
+                      <span>Month</span>
+                      <select
+                        aria-label="Select month"
+                        value={month.getMonth()}
+                        onChange={(e) => {
+                          const next = new Date(month.getFullYear(), Number(e.target.value), 1, 12);
+                          setMonth(startOfMonth(next));
+                          setSelectedDate(format(next, 'yyyy-MM-dd'));
+                        }}
+                      >
+                        {Array.from({ length: 12 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {format(new Date(2000, i, 1), 'MMMM', { locale: enUS })}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
 
                   <div className="month-nav">
-                    <button
-                      className="icon-button"
-                      aria-label="Previous month"
-                      onClick={() => setMonth(subMonths(month, 1))}
-                    >
+                    <button className="icon-button" aria-label={`Previous ${calendarMode.toLowerCase()}`} onClick={() => navigateCalendar('previous')}>
                       <ArrowLeft size={18} />
                     </button>
-
-                    <button
-                      className="icon-button"
-                      aria-label="Next month"
-                      onClick={() => setMonth(addMonths(month, 1))}
-                    >
+                    <button className="icon-button" aria-label={`Next ${calendarMode.toLowerCase()}`} onClick={() => navigateCalendar('next')}>
                       <ArrowRight size={18} />
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div className="calendar-grid weekday-row">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(
-                  (day) => (
-                    <span key={day}>{day}</span>
-                  )
-                )}
+              <div className="calendar-mode-switch" role="group" aria-label="Calendar view">
+                {['Day', 'Week', 'Month', 'Year'].map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    className={calendarMode === mode ? 'mode-active' : ''}
+                    aria-pressed={calendarMode === mode}
+                    onClick={() => setCalendarMode(mode)}
+                  >
+                    {mode}
+                  </button>
+                ))}
               </div>
 
-              <div className="calendar-grid day-grid">
-                {calendarDays.map((day) => {
-                  const key = format(day, 'yyyy-MM-dd');
-
-                  return (
+              {calendarMode === 'Year' ? (
+                <div className="year-grid">
+                  {Array.from({ length: 12 }, (_, i) => new Date(month.getFullYear(), i, 1, 12)).map((date) => (
                     <button
-                      key={key}
+                      type="button"
+                      key={date.getMonth()}
+                      className={`year-month ${date.getMonth() === month.getMonth() ? 'selected' : ''}`}
                       onClick={() => {
-                        setSelectedDate(key);
-                        setShowComposer(false);
-                        setView('day');
+                        setMonth(startOfMonth(date));
+                        setSelectedDate(format(date, 'yyyy-MM-dd'));
+                        setCalendarMode('Month');
                       }}
-                      className={`day-cell ${
-                        !isSameMonth(day, month) ? 'outside' : ''
-                      } ${key === selectedDate ? 'selected' : ''} ${
-                        isToday(day) ? 'today' : ''
-                      }`}
                     >
-                      <span>{format(day, 'd')}</span>
-                      {postDates.has(key) && <i />}
+                      <span>{format(date, 'MMM')}</span>
+                      <small>{posts.filter((post) => post.entry_date.startsWith(format(date, 'yyyy-MM'))).length} memories</small>
                     </button>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  {calendarMode !== 'Day' && (
+                    <div className="calendar-grid weekday-row">
+                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => <span key={day}>{day}</span>)}
+                    </div>
+                  )}
+                  <div className={`calendar-grid day-grid ${calendarMode === 'Day' ? 'single-day-grid' : ''} ${calendarMode === 'Week' ? 'week-day-grid' : ''}`}>
+                    {visibleCalendarDays.map((day) => {
+                      const key = format(day, 'yyyy-MM-dd');
+                      return (
+                        <button
+                          type="button"
+                          key={key}
+                          onClick={() => {
+                            goToDate(day);
+                            setShowComposer(false);
+                            setView('day');
+                          }}
+                          className={`day-cell ${calendarMode === 'Month' && !isSameMonth(day, month) ? 'outside' : ''} ${key === selectedDate ? 'selected' : ''} ${isToday(day) ? 'today' : ''}`}
+                        >
+                          <span>{format(day, calendarMode === 'Day' ? 'EEEE, MMM d' : 'd')}</span>
+                          {postDates.has(key) && <i />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </section>
           </>
         )}
