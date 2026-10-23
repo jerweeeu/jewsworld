@@ -1,4 +1,3 @@
-```jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   addMonths,
@@ -1131,4 +1130,3 @@ function App() {
 }
 
 export default App;
-```
