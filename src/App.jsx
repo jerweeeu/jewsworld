@@ -1,112 +1,96 @@
-                                required
-                              />
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  addDays,
+  addMonths,
+  addWeeks,
+  addYears,
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameMonth,
+  isToday,
+  startOfMonth,
+  startOfWeek,
+  subDays,
+  subMonths,
+  subWeeks,
+  subYears
+} from 'date-fns';
+import { enUS } from 'date-fns/locale';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookHeart,
+  CalendarDays,
+  Camera,
+  LogOut,
+  MessageCircle,
+  Plus,
+  Send,
+  Sparkles,
+  X
+} from 'lucide-react';
+import { supabase, supabaseConfigured } from './supabase';
 
-                              <button
-                                aria-label="Send comment"
-                                className="send-button"
-                              >
-                                <Send size={16} />
-                              </button>
-                            </form>
-                          ) : (
-                            <button
-                              className="comment-login"
-                              onClick={() => setAuthOpen(true)}
-                            >
-                              Log in to comment
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </article>
-                  ) : (
-                    <article
-                      className="memory-card photo-memory"
-                      key={item.id}
-                    >
-                      <div className="memory-photo-wrap">
-                        <img
-                          src={item.photo.url}
-                          alt={
-                            item.photo.caption ||
-                            item.post.title ||
-                            'Diary photo'
-                          }
-                          loading="lazy"
-                        />
+const todayKey = () => format(new Date(), 'yyyy-MM-dd');
 
-                        <span className="photo-date">
-                          {format(
-                            new Date(`${item.post.entry_date}T12:00:00`),
-                            'M/d'
-                          )}
-                        </span>
-                      </div>
+const errorText = (error) =>
+  error?.message || 'Something went wrong. Please try again later.';
 
-                      {item.post.title && (
-                        <p className="photo-caption">{item.post.title}</p>
-                      )}
+function AuthPanel({ onClose, onDone }) {
+  const [mode, setMode] = useState('login');
+  const [email, setEmail] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
 
-                      {isAdmin && (
-                        <button
-                          className="text-button danger-text photo-delete"
-                          onClick={() => deletePost(item.post)}
-                        >
-                          Delete photo set
-                        </button>
-                      )}
-                    </article>
-                  )
-                )}
-            </div>
+  async function submit(e) {
+    e.preventDefault();
+    setBusy(true);
+    setMessage('');
 
-            {activePost && (
-              <div
-                className="modal-backdrop"
-                onMouseDown={(e) =>
-                  e.target === e.currentTarget && setActivePost(null)
-                }
-              >
-                <section className="modal note-detail">
-                  <button
-                    className="icon-button close"
-                    onClick={() => setActivePost(null)}
-                    aria-label="Close"
-                  >
-                    <X size={18} />
-                  </button>
+    try {
+      if (!supabase) {
+        throw new Error(
+          'Supabase is not connected. Please check your .env settings.'
+        );
+      }
 
-                  <div className="eyebrow">A LITTLE MEMORY</div>
+      if (mode === 'signup') {
+        if (password.length < 8) {
+          throw new Error('Your password must be at least 8 characters long.');
+        }
 
-                  <h2>{activePost.title || 'Untitled entry'}</h2>
+        const cleanName = displayName.trim();
 
-                  <p className="note-detail-body">{activePost.body}</p>
+        if (cleanName.length < 2 || cleanName.length > 40) {
+          throw new Error('Your display name must be between 2 and 40 characters.');
+        }
 
-                  <small>
-                    {format(
-                      new Date(`${activePost.entry_date}T12:00:00`),
-                      'MMMM d, yyyy'
-                    )}
-                  </small>
-                </section>
-              </div>
-            )}
-          </section>
-        )}
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: { display_name: cleanName }
+          }
+        });
 
-        <footer className="footer">
-          Call Me If U Get Lost 
-        </footer>
-      </main>
+        if (error) throw error;
 
-      {authOpen && (
-        <AuthPanel
-          onClose={() => setAuthOpen(false)}
-          onDone={() => setAuthOpen(false)}
-        />
-      )}
-    </div>
-  );
-}
+        if (data.session) {
+          setMessage('Account created successfully. Welcome!');
+          onDone(data.session.user);
+        } else {
+          setMessage(
+            'Your account has been created. If you cannot sign in yet, check your email confirmation settings in Supabase.'
+          );
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password
+        });
 
-export default App;
+        if (error) throw error;
