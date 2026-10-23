@@ -200,6 +200,17 @@ function AuthPanel({ onClose, onDone }) {
 
 function App() {
   const [session, setSession] = useState(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  useEffect(() => {
+  const timer = setInterval(() => {
+  setCurrentTime(new Date());
+  }, 1000);
+
+     return () => clearInterval(timer);
+}, []);
+
+  const timeText = format(currentTime, 'HH');
+  const dateText = format(currentTime, 'EEE, MMM d', { locale: enUS });
   const [authOpen, setAuthOpen] = useState(false);
   const [month, setMonth] = useState(startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState(todayKey());
@@ -555,15 +566,19 @@ function App() {
         </div>
 
         <main className="welcome-content">
-          <div className="welcome-kicker">A LITTLE SPACE TO KEEP</div>
+      <div className="welcome-kicker">
+        {timeText} {dateText}
+      </div>
 
-          <h1>
-            Welcome to
-            <br />
-            <em>A New World</em>
-          </h1>
+      <h1>
+        Welcome to
+        <br />
+        <em>A New World</em>
+      </h1>
 
-          <p>Let’s run through my daydream</p>
+      <p className="welcome-tagline">
+        Let’s run through my daydream
+      </p>
 
           <AuthPanel
             onClose={() => {}}
