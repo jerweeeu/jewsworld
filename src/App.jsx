@@ -230,6 +230,25 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    if (!activePhoto) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setActivePhoto(null);
+      }
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activePhoto]);
+
+  useEffect(() => {
     if (!supabaseConfigured) return;
 
     supabase.auth.getSession().then(({ data }) => {
@@ -1062,7 +1081,12 @@ function App() {
                         <button
                           type="button"
                           className="memory-photo-button"
-                          onClick={() => setActivePhoto(item.photo)}
+                          onClick={() =>
+                            setActivePhoto({
+                              ...item.photo,
+                              postTitle: item.post.title || ''
+                            })
+                          }
                           aria-label={`View full photo: ${
                             item.photo.caption ||
                             item.post.title ||
@@ -1107,52 +1131,49 @@ function App() {
                 )}
             </div>
             {activePhoto && (
-  <div
-    className="photo-viewer-backdrop"
-    onMouseDown={(e) => {
-      if (e.target === e.currentTarget) {
-        setActivePhoto(null);
-      }
-    }}
-    onKeyDown={(e) => {
-      if (e.key === 'Escape') {
-        setActivePhoto(null);
-      }
-    }}
-    role="presentation"
-  >
-    <section
-      className="photo-viewer"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Full photo viewer"
-    >
-      <button
-        type="button"
-        className="photo-viewer-close"
-        onClick={() => setActivePhoto(null)}
-        aria-label="Close photo viewer"
-      >
-        <X size={22} />
-      </button>
+              <div
+                className="photo-viewer-backdrop"
+                role="presentation"
+                onMouseDown={(e) => {
+                  if (e.target === e.currentTarget) {
+                    setActivePhoto(null);
+                  }
+                }}
+              >
+                <section
+                  className="photo-viewer"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Full photo viewer"
+                >
+                  <button
+                    type="button"
+                    className="photo-viewer-close"
+                    onClick={() => setActivePhoto(null)}
+                    aria-label="Close photo viewer"
+                    autoFocus
+                  >
+                    <X size={22} />
+                  </button>
 
-      <img
-        className="photo-viewer-image"
-        src={activePhoto.url}
-        alt={
-          activePhoto.caption ||
-          'Full-size diary photo'
-        }
-      />
+                  <img
+                    className="photo-viewer-image"
+                    src={activePhoto.url}
+                    alt={
+                      activePhoto.caption ||
+                      activePhoto.postTitle ||
+                      'Full-size diary photo'
+                    }
+                  />
 
-      {activePhoto.caption && (
-        <p className="photo-viewer-caption">
-          {activePhoto.caption}
-        </p>
-      )}
-    </section>
-  </div>
-)}
+                  {(activePhoto.caption || activePhoto.postTitle) && (
+                    <p className="photo-viewer-caption">
+                      {activePhoto.caption || activePhoto.postTitle}
+                    </p>
+                  )}
+                </section>
+              </div>
+            )}
             {activePost && (
               <div
                 className="modal-backdrop"
