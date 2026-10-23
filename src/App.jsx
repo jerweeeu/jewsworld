@@ -388,7 +388,7 @@ function App() {
 
       for (const file of composerMode === 'photo' ? photos : []) {
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-        const path = `${post.id}/${crypto.randomUUID()}.${ext}`;
+        const path = ${post.id}/${crypto.randomUUID()}.${ext};
 
         const { error: uploadError } = await supabase.storage
           .from('public-post-photos')
