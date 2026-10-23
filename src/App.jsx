@@ -624,7 +624,7 @@ function App() {
           <>
             <section className="intro">
               <div className="eyebrow">
-                <Sparkles size={14} /> RECORD EVERDAY
+                <Sparkles size={14} /> RECORD EVERYDAY
               </div>
 
               <h1>Always Be There</h1>
