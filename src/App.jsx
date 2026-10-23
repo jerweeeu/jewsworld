@@ -112,13 +112,9 @@ function AuthPanel({ onClose, onDone }) {
           <X size={18} />
         </button>
 
-        <div className="eyebrow">ALWAYS BE THERE</div>
-
-        <h2>{mode === 'login' ? 'Welcome back' : 'Create your account'}</h2>
-
-        <p className="muted">
-          Sign in to enter your own little space for everyday memories.
-        </p>
+        <div className="auth-heading">
+          <h2>{mode === 'login' ? 'Log in' : 'Create an account'}</h2>
+        </div>
 
         <form onSubmit={submit} className="stack">
           {mode === 'signup' && (
@@ -136,21 +132,21 @@ function AuthPanel({ onClose, onDone }) {
             </label>
           )}
 
-          <label>
-            Email address
+          <label className="auth-field-label">
             <input
+              aria-label="Email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              placeholder="name@example.com"
+              placeholder="Email"
             />
           </label>
 
-          <label>
-            Password
+          <label className="auth-field-label">
             <input
+              aria-label="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -159,7 +155,7 @@ function AuthPanel({ onClose, onDone }) {
               autoComplete={
                 mode === 'login' ? 'current-password' : 'new-password'
               }
-              placeholder="At least 8 characters"
+              placeholder="Password"
             />
           </label>
 
@@ -561,24 +557,12 @@ function App() {
   if (!session) {
     return (
       <div className="welcome-screen">
-        <div className="welcome-brand">
-          A Couple Minutes <span>♡</span>
-        </div>
-
         <main className="welcome-content">
-      <div className="welcome-kicker">
-        {timeText} {dateText}
-      </div>
-
-      <h1>
-        Welcome to
-        <br />
-        <em>A New World</em>
-      </h1>
-
-      <p className="welcome-tagline">
-        Let’s run through my daydream
-      </p>
+          <div className="welcome-art-wrap">
+            <div className="welcome-art-label">jewsworld</div>
+            <img className="welcome-art" src="/jewsworld-art.jpg" alt="Colorful hand-drawn Jewsworld doodles" />
+          </div>
+          <h1 className="welcome-title">welcome to jews world</h1>
 
           <AuthPanel
             onClose={() => {}}
@@ -586,9 +570,7 @@ function App() {
           />
         </main>
 
-        <div className="welcome-foot">
-          Call Me If U Get Lost
-        </div>
+        <div className="welcome-foot">call me if u get lost</div>
       </div>
     );
   }
