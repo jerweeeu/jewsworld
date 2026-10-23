@@ -387,25 +387,25 @@ function App() {
       if (postError) throw postError;
 
       for (const file of composerMode === 'photo' ? photos : []) {
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-        const path = ${post.id}/${crypto.randomUUID()}.${ext};
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const path = `${post.id}/${crypto.randomUUID()}.${ext}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('public-post-photos')
-          .upload(path, file, { upsert: false });
+  const { error: uploadError } = await supabase.storage
+    .from('public-post-photos')
+    .upload(path, file, { upsert: false });
 
-        if (uploadError) throw uploadError;
+  if (uploadError) throw uploadError;
 
-        const { error: photoError } = await supabase
-          .from('post_photos')
-          .insert({
-            post_id: post.id,
-            storage_path: path,
-            caption: ''
-          });
+  const { error: photoError } = await supabase
+    .from('post_photos')
+    .insert({
+      post_id: post.id,
+      storage_path: path,
+      caption: ''
+    });
 
-        if (photoError) throw photoError;
-      }
+  if (photoError) throw photoError;
+}
 
       setTitle('');
       setBody('');
