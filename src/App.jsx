@@ -226,6 +226,7 @@ function App() {
   const [photos, setPhotos] = useState([]);
   const [commentDrafts, setCommentDrafts] = useState({});
   const [activePost, setActivePost] = useState(null);
+  const [activePhoto, setActivePhoto] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -1058,23 +1059,38 @@ function App() {
                       key={item.id}
                     >
                       <div className="memory-photo-wrap">
-                        <img
-                          src={item.photo.url}
-                          alt={
+                        <button
+                          type="button"
+                          className="memory-photo-button"
+                          onClick={() => setActivePhoto(item.photo)}
+                          aria-label={`View full photo: ${
                             item.photo.caption ||
                             item.post.title ||
                             'Diary photo'
-                          }
-                          loading="lazy"
-                        />
+                          }`}
+                         >
+                          <img
+                            src={item.photo.url}
+                            alt={
+                              item.photo.caption ||
+                              item.post.title ||
+                              'Diary photo'
+                            }
+                            loading="lazy"
+                           />
 
-                        <span className="photo-date">
-                          {format(
-                            new Date(`${item.post.entry_date}T12:00:00`),
+                           <span className="photo-view-hint">
+                             View full photo ↗
+                           </span>
+                         </button>
+
+                         <span className="photo-date">
+                           {format(
+                             new Date(`${item.post.entry_date}T12:00:00`),
                             'M/d'
-                          )}
-                        </span>
-                      </div>
+                            )}
+                          </span>
+                        </div>
 
                       {item.post.title && (
                         <p className="photo-caption">{item.post.title}</p>
@@ -1092,7 +1108,53 @@ function App() {
                   )
                 )}
             </div>
+            {activePhoto && (
+  <div
+    className="photo-viewer-backdrop"
+    onMouseDown={(e) => {
+      if (e.target === e.currentTarget) {
+        setActivePhoto(null);
+      }
+    }}
+    onKeyDown={(e) => {
+      if (e.key === 'Escape') {
+        setActivePhoto(null);
+      }
+    }}
+    role="presentation"
+  >
+    <section
+      className="photo-viewer"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Full photo viewer"
+    >
+      <button
+        type="button"
+        className="photo-viewer-close"
+        onClick={() => setActivePhoto(null)}
+        aria-label="Close photo viewer"
+      >
+        <X size={22} />
+      </button>
 
+      <img
+        className="photo-viewer-image"
+        src={activePhoto.url}
+        alt={
+          activePhoto.caption ||
+          'Full-size diary photo'
+        }
+      />
+
+      {activePhoto.caption && (
+        <p className="photo-viewer-caption">
+          {activePhoto.caption}
+        </p>
+      )}
+    </section>
+  </div>
+)}
             {activePost && (
               <div
                 className="modal-backdrop"
