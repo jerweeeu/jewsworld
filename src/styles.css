@@ -1617,254 +1617,155 @@ button:disabled {
 }
   
 
-
-/* Minimal handwritten login redesign */
+/* Welcome screen refinements — preserve the original green and cream palette */
 .welcome-screen {
-  background: #fffefb;
-  color: #234b3c;
-  padding: 24px clamp(20px, 6vw, 76px) 18px;
+  background: #f4eed9;
+  color: #174d40;
 }
-.welcome-screen::before,
+
+.welcome-screen::before {
+  background: #dce4d8;
+  opacity: 0.48;
+}
+
 .welcome-screen::after {
-  display: none;
+  background: #a8c86b;
+  opacity: 0.28;
 }
+
 .welcome-brand {
-  display: flex;
-  align-items: center;
-  min-height: 28px;
-  color: #718178;
-}
-.welcome-brand-name {
+  color: #174d40;
   font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: 20px;
+  font-size: 30px;
   letter-spacing: 0.02em;
 }
+
+.welcome-brand span {
+  color: #174d40;
+}
+
 .welcome-content {
-  width: min(100%, 390px);
-  margin: auto;
-  padding: 20px 0 12px;
-}
-.welcome-kicker {
+  width: min(100%, 470px);
+  padding: 28px 0;
   text-align: center;
-  color: #718178;
-  font-size: 15px;
-  font-weight: 400;
-  letter-spacing: 0.12em;
 }
-.welcome-content > h1.welcome-title {
-  margin: 24px 0 10px;
-  color: #718178;
+
+.welcome-kicker {
+  color: #587365;
+  font-size: clamp(19px, 2.5vw, 24px);
+  font-weight: 500;
+  letter-spacing: 0.04em;
   font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: clamp(42px, 7vw, 64px);
-  font-weight: 400;
+}
+
+.welcome-content > h1 {
+  margin: 24px 0 14px;
+  color: #174d40;
+  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
+  font-size: clamp(48px, 8vw, 76px);
+  font-weight: 500;
   line-height: 1.02;
   letter-spacing: 0;
-  text-align: center;
+  text-wrap: balance;
 }
-.welcome-content > h1.welcome-title em {
+
+.welcome-content > h1 em {
   color: #174d40;
+  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
   font-style: normal;
 }
-.welcome-content > p.welcome-tagline {
-  margin: 12px 0 24px;
-  color: #718178;
+
+.welcome-content > .welcome-tagline {
+  margin: 0 0 25px;
+  color: #587365;
   font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: 18px;
-  line-height: 1.4;
-  text-align: center;
+  font-size: clamp(20px, 3vw, 25px);
+  line-height: 1.5;
 }
+
 .welcome-content .auth-modal {
-  width: min(100%, 340px);
-  margin: 0 auto;
-  padding: 8px 0 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  padding: 22px 24px;
+  border-color: #dce4d8;
+  border-radius: 18px;
+  background: #fffdf5;
+  box-shadow: 0 10px 30px #174d4010;
+  text-align: left;
 }
-.welcome-content .auth-modal .auth-title {
-  margin: 0 0 14px;
-  color: #718178;
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: 23px;
-  font-weight: 400;
-  text-align: center;
+
+.welcome-content .auth-modal > .eyebrow,
+.welcome-content .auth-modal > h2,
+.welcome-content .auth-modal > p.muted {
+  display: none;
 }
+
 .welcome-content .auth-modal .stack {
-  gap: 12px;
+  gap: 10px;
 }
-.welcome-content .auth-modal .auth-field-label {
-  display: block;
-  color: transparent;
-  font-size: 0;
+
+.welcome-content .auth-modal label {
+  gap: 4px;
+  color: #718178;
+  font-size: 11px;
 }
+
 .welcome-content .auth-modal input {
-  width: 100%;
-  min-height: 44px;
-  padding: 10px 13px;
-  border: 0;
-  border-bottom: 1px solid #dce4d8;
-  border-radius: 0;
-  background: transparent;
-  color: #234b3c;
-  font-size: 14px;
-  outline-offset: 3px;
+  padding: 11px 12px;
+  border-color: #dce4d8;
+  border-radius: 11px;
+  background: #fffefb;
 }
-.welcome-content .auth-modal input::placeholder {
-  color: #9aa49a;
-}
+
 .welcome-content .auth-modal input:focus {
-  border-color: #718b72;
-  box-shadow: none;
-}
-.welcome-content .auth-modal .primary-button {
-  min-height: 46px;
-  margin-top: 8px;
-  border: 0;
-  border-radius: 999px;
-  background: #9eac9a;
-  color: #fffefb;
-  font-size: 17px;
-  letter-spacing: 0.03em;
-}
-.welcome-content .auth-modal .text-button {
-  display: block;
-  margin: 14px auto 0;
-  color: #718178;
-  font-size: 14px;
-}
-.welcome-foot {
-  padding: 16px 0 8px;
-  color: #718178;
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: 15px;
-  letter-spacing: 0.08em;
-  text-transform: lowercase;
-}
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-@media (max-width: 520px) {
-  .welcome-screen { padding: 18px 22px 12px; }
-  .welcome-content { padding: 12px 0; }
-  .welcome-content > h1.welcome-title { font-size: clamp(39px, 11vw, 54px); }
-  .welcome-content > p.welcome-tagline { font-size: 16px; }
-}
-
-/* Login landing page refinement: larger handwritten hero, green palette,
-   and a slightly lower, compact sign-in area. */
-.welcome-screen {
-  background: #f7f6ed;
-  color: #174d40;
-}
-
-.welcome-brand,
-.welcome-brand-name {
-  color: #174d40;
-}
-
-.welcome-brand-name {
-  font-size: 23px;
-}
-
-.welcome-content {
-  width: min(100%, 420px);
-  margin: auto auto 2vh;
-  padding: 28px 0 8px;
-}
-
-.welcome-kicker {
-  color: #587365;
-  font-size: clamp(17px, 2.2vw, 20px);
-  letter-spacing: 0.13em;
-  line-height: 1.5;
-}
-
-.welcome-content > h1.welcome-title {
-  margin: 28px 0 14px;
-  color: #174d40;
-  font-size: clamp(60px, 9vw, 94px);
-  line-height: 0.98;
-  letter-spacing: -0.015em;
-}
-
-.welcome-content > h1.welcome-title em {
-  color: #174d40;
-}
-
-.welcome-content > p.welcome-tagline {
-  margin: 16px 0 30px;
-  color: #587365;
-  font-size: clamp(20px, 2.8vw, 24px);
-  line-height: 1.5;
-}
-
-.welcome-content .auth-modal {
-  width: min(100%, 330px);
-  margin: 24px auto 0;
-}
-
-.welcome-content .auth-modal .auth-title {
-  font-size: 25px;
-}
-
-.welcome-content .auth-modal input {
-  min-height: 46px;
-  font-size: 15px;
+  border-color: #a8c86b;
+  outline: 2px solid #a8c86b55;
 }
 
 .welcome-content .auth-modal .primary-button {
-  background: #718b72;
-  color: #fffefb;
+  margin-top: 3px;
+  border-color: #174d40;
+  background: #174d40;
+  color: #fffdf5;
 }
 
 .welcome-content .auth-modal .primary-button:hover {
-  background: #587365;
+  background: #286555;
 }
 
 .welcome-content .auth-modal .text-button {
-  color: #587365;
-  font-size: 15px;
+  margin-top: 9px;
+  color: #174d40;
 }
 
 .welcome-foot {
   color: #587365;
-  font-size: 16px;
+  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.04em;
 }
 
-@media (max-width: 520px) {
-  .welcome-screen {
-    padding: 18px 22px 12px;
+@media (max-width: 640px) {
+  .welcome-brand {
+    font-size: 26px;
   }
 
   .welcome-content {
-    margin: auto auto 1vh;
-    padding: 18px 0 8px;
+    padding: 22px 0;
   }
 
-  .welcome-kicker {
-    font-size: 16px;
+  .welcome-content > h1 {
+    font-size: clamp(42px, 11vw, 60px);
+    line-height: 1.08;
   }
 
-  .welcome-content > h1.welcome-title {
-    margin: 22px 0 12px;
-    font-size: clamp(50px, 12vw, 68px);
-  }
-
-  .welcome-content > p.welcome-tagline {
-    margin: 14px 0 22px;
-    font-size: 19px;
+  .welcome-content > .welcome-tagline {
+    font-size: 20px;
   }
 
   .welcome-content .auth-modal {
-    margin-top: 20px;
+    padding: 18px;
+  }
+
+  .welcome-kicker {
+    font-size: 18px;
   }
 }
