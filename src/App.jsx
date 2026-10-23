@@ -587,7 +587,7 @@ function App() {
         </main>
 
         <div className="welcome-foot">
-          Call Me If U Get Lost · Always Be There
+          Call Me If U Get Lost
         </div>
       </div>
     );
@@ -603,7 +603,7 @@ function App() {
 
           <span>
             A Couple Minutes
-            <small>A little time, a lifetime of memories</small>
+            <small>Things are getting better and better</small>
           </span>
         </a>
 
@@ -624,7 +624,7 @@ function App() {
           <>
             <section className="intro">
               <div className="eyebrow">
-                <Sparkles size={14} /> A LITTLE SPACE FOR EVERYDAY
+                <Sparkles size={14} /> RECORD EVERDAY
               </div>
 
               <h1>Always Be There</h1>
@@ -763,7 +763,7 @@ function App() {
             <div className="section-heading">
               <div>
                 <div className="eyebrow">
-                  <CalendarDays size={14} /> Where the Flower Blooms
+                  <CalendarDays size={16} /> Where the Flower Blooms
                 </div>
 
                 <h2>
@@ -805,7 +805,7 @@ function App() {
                   <Camera size={24} />
                 </div>
 
-                <h3>No entries for this day yet</h3>
+                <h3>Whats poppin today?!</h3>
 
                 <p>Even ordinary days are worth remembering.</p>
 
@@ -1130,7 +1130,7 @@ function App() {
         )}
 
         <footer className="footer">
-          Call Me If U Get Lost · Always Be There
+          Call Me If U Get Lost 
         </footer>
       </main>
 
