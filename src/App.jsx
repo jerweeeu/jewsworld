@@ -113,7 +113,7 @@ function AuthPanel({ onClose, onDone }) {
         </button>
 
         <div className="auth-heading">
-          <h2>{mode === 'login' ? 'Log in' : 'Create an account'}</h2>
+          {mode === 'signup' && <h2>Create an account</h2>}
         </div>
 
         <form onSubmit={submit} className="stack">
@@ -558,11 +558,9 @@ function App() {
     return (
       <div className="welcome-screen">
         <main className="welcome-content">
-          <div className="welcome-art-wrap">
-            <div className="welcome-art-label">jewsworld</div>
-            <img className="welcome-art" src="/jewsworld-art.jpg" alt="Colorful hand-drawn Jewsworld doodles" />
-          </div>
-          <h1 className="welcome-title">welcome to jews world</h1>
+          <div className="welcome-kicker">{timeText} {dateText}</div>
+          <h1 className="welcome-title">Welcome to<br /><em>A New World</em></h1>
+          <p className="welcome-tagline">Let’s run through my daydream</p>
 
           <AuthPanel
             onClose={() => {}}
@@ -570,7 +568,7 @@ function App() {
           />
         </main>
 
-        <div className="welcome-foot">call me if u get lost</div>
+        <div className="welcome-foot">Call Me If U Get Lost</div>
       </div>
     );
   }
