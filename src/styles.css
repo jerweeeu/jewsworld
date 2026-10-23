@@ -998,74 +998,76 @@ button:disabled {
 /* ========================================
    18. Welcome / Login Screen
 ======================================== */
-
- .welcome-screen {
-  --welcome-cream: #fffdf1;
-  --welcome-green: #526b45;
-  --welcome-green-dark: #344b31;
-  --welcome-brown: #75634a;
+.welcome-screen {
   position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 24px clamp(18px, 5vw, 64px) 14px;
+  padding: 28px clamp(20px, 6vw, 76px) 18px;
   overflow: hidden;
-  background: var(--welcome-cream);
-  color: var(--welcome-green-dark);
+  background: #f4eed9;
+  color: #174d40;
 }
-
-.welcome-screen::before,
-.welcome-screen::after { content: none; }
-
+.welcome-screen::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  right: -100px;
+  width: 320px;
+  height: 320px;
+  border-radius: 48% 52% 61% 39%;
+  background: #e4d9f5;
+  opacity: .45;
+  transform: rotate(24deg);
+}
+.welcome-screen::after {
+  content: '';
+  position: absolute;
+  bottom: 8%;
+  left: -70px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: #e7edc9;
+  opacity: .65;
+}
+.welcome-brand {
+  position: relative;
+  z-index: 1;
+  font-size: 24px;
+  letter-spacing: .02em;
+}
+.welcome-brand span { color: #718b58; }
 .welcome-content {
   position: relative;
   z-index: 1;
-  width: min(100%, 440px);
-  margin: 0 auto;
-  padding: 0 0 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  width: min(100%, 480px);
+  margin: auto;
+  padding: 30px 0 8px;
 }
-
-.welcome-art-wrap {
-  position: relative;
-  width: min(100%, 390px);
-  margin: 0 auto 6px;
-}
-
-.welcome-art-label {
-  position: absolute;
-  top: 5px;
-  left: 2px;
-  z-index: 2;
-  color: var(--welcome-green-dark);
+.welcome-kicker {
+  color: #718178;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: .12em;
   font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: clamp(22px, 4vw, 30px);
-  transform: rotate(-7deg);
 }
-
-.welcome-art {
-  display: block;
-  width: 100%;
-  max-height: 310px;
-  object-fit: contain;
-  border-radius: 18px;
-  mix-blend-mode: multiply;
-}
-
 .welcome-title {
-  margin: 0 0 18px;
-  text-align: center;
-  color: var(--welcome-green-dark);
+  margin: 18px 0;
+  color: #174d40;
+  font-size: clamp(44px, 8vw, 76px);
+  font-weight: 600;
+  line-height: .96;
+  letter-spacing: -.04em;
   font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: clamp(29px, 5vw, 40px);
-  font-weight: 500;
-  line-height: 1.12;
-  letter-spacing: -0.025em;
 }
-
+.welcome-title em { display: inline-block; font-style: normal; color: #526b45; }
+.welcome-tagline {
+  margin: 0 0 18px;
+  color: #587365;
+  line-height: 1.8;
+  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
+}
 .welcome-content .modal-backdrop {
   position: static;
   width: 100%;
@@ -1073,58 +1075,60 @@ button:disabled {
   background: transparent;
   backdrop-filter: none;
 }
-
 .welcome-content .auth-modal {
   width: min(100%, 330px);
-  margin: 0 auto;
-  padding: 12px 10px 8px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  margin: 28px auto 0;
+  padding: 18px 18px 12px;
+  border: 1px solid #e1e5d5;
+  border-radius: 24px;
+  background: #fffdf5;
+  box-shadow: 0 14px 40px #174d4010;
 }
-
 .welcome-content .auth-modal .close { display: none; }
-.welcome-content .auth-modal .auth-heading h2 { margin: 0 0 8px; text-align: center; font-size: 22px; color: #344b31; }
 .welcome-content .auth-modal .auth-heading { margin: 0; }
+.welcome-content .auth-modal .auth-heading h2 { display: none; }
 .welcome-content .auth-modal .stack { gap: 12px; }
-.welcome-content .auth-modal label.auth-field-label { display: block; color: var(--welcome-green); }
+.welcome-content .auth-modal label.auth-field-label { display: block; color: #456456; }
 .welcome-content .auth-modal input {
   width: 100%;
   min-height: 45px;
   padding: 11px 14px;
-  border: 1px solid #d9dfcd;
-  border-radius: 12px;
-  background: #fffef9;
-  color: var(--welcome-green-dark);
-  box-shadow: 0 2px 8px #344b3108;
+  border: 1px solid #dce4d8;
+  border-radius: 13px;
+  background: #fffefb;
+  color: #174d40;
 }
-.welcome-content .auth-modal input::placeholder { color: #999b88; }
+.welcome-content .auth-modal input::placeholder { color: #718178; }
 .welcome-content .auth-modal input:focus { border-color: #81946f; outline: 3px solid #81946f24; }
 .welcome-content .auth-modal .primary-button {
   width: 100%;
   margin-top: 2px;
   border-radius: 12px;
-  background: var(--welcome-green);
-  color: #fffdf1;
+  background: #526b45;
+  color: #fffdf5;
 }
-.welcome-content .auth-modal .primary-button:hover { background: var(--welcome-green-dark); }
+.welcome-content .auth-modal .primary-button:hover { background: #344b31; }
 .welcome-content .auth-modal .text-button {
   display: block;
   margin: 10px auto 0;
-  color: var(--welcome-green-dark);
+  color: #174d40;
 }
 .welcome-content .auth-modal .notice { overflow-wrap: anywhere; }
 .welcome-foot {
   position: relative;
   z-index: 1;
-  margin-top: auto;
-  padding: 10px 0 2px;
-  color: var(--welcome-brown);
+  padding: 18px 0 4px;
+  color: #75634a;
   font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
   font-size: 13px;
-  letter-spacing: 0.04em;
+  letter-spacing: .04em;
   text-align: center;
+}
+@media (max-width: 600px) {
+  .welcome-screen { padding: 22px 20px 14px; }
+  .welcome-content { padding: 24px 0 8px; }
+  .welcome-title { font-size: clamp(42px, 12vw, 62px); }
+  .welcome-content .auth-modal { margin-top: 24px; }
 }
 
 /* ========================================
