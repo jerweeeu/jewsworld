@@ -175,7 +175,7 @@ function AuthPanel({ onClose, onDone }) {
             {busy
               ? 'Please wait…'
               : mode === 'login'
-                ? 'Log in'
+                ? 'ENTER A NEW WORLD →'
                 : 'Create account'}
           </button>
         </form>
@@ -591,7 +591,7 @@ function App() {
       </div>
 
       <h1>
-        welcome to a new world
+        WELCOME TO<br />A NEW<br />UNIVERSE.
       </h1>
 
       <p className="welcome-tagline">
@@ -605,7 +605,7 @@ function App() {
         </main>
 
         <div className="welcome-foot">
-          call me if u get lost
+          Jew’s ARCHIVE
         </div>
       </div>
     );
