@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Patrick+Hand&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Patrick+Hand&display=swap');
 
 @font-face {
   font-family: 'Jewsworld';
@@ -321,7 +321,7 @@ button:disabled {
 }
 
 .primary-button:hover {
-  background: #286555;
+  background: #0F3C65;
 }
 
 .primary-button.compact {
@@ -1631,78 +1631,74 @@ button:disabled {
 }
   
 
-/* Welcome screen refinements — preserve the original green and cream palette */
+/* Welcome screen — cinematic minimal palette */
 .welcome-screen {
-  background: #f4eed9;
-  color: #174d40;
+  background: #FFF2BA;
+  color: #013137;
 }
 
-.welcome-screen::before {
-  background: #dce4d8;
-  opacity: 0.48;
-}
-
+.welcome-screen::before,
 .welcome-screen::after {
-  background: #a8c86b;
-  opacity: 0.28;
+  display: none;
 }
 
 .welcome-brand {
-  color: #174d40;
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
+  color: #013137;
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
   font-size: 30px;
   letter-spacing: 0.02em;
 }
 
 .welcome-brand span {
-  color: #174d40;
+  color: #0F3C65;
 }
 
 .welcome-content {
-  width: min(100%, 470px);
+  width: min(100%, 760px);
   padding: 28px 0;
-  text-align: center;
+  text-align: left;
+  margin: auto 0;
 }
 
 .welcome-kicker {
-  color: #587365;
-  font-size: clamp(19px, 2.5vw, 24px);
+  color: #0F3C65;
+  font-size: clamp(15px, 2vw, 19px);
   font-weight: 500;
-  letter-spacing: 0.04em;
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
+  letter-spacing: 0.12em;
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
 }
 
 .welcome-content > h1 {
-  margin: 24px 0 14px;
-  color: #174d40;
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: clamp(48px, 8vw, 76px);
-  font-weight: 500;
-  line-height: 1.02;
-  letter-spacing: 0;
+  margin: 24px 0 18px;
+  color: #013137;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(58px, 10vw, 104px);
+  font-weight: 600;
+  line-height: 0.94;
+  letter-spacing: -0.035em;
   text-wrap: balance;
 }
 
 .welcome-content > h1 em {
-  color: #174d40;
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
+  color: #013137;
+  font-family: 'Cormorant Garamond', Georgia, serif;
   font-style: normal;
 }
 
 .welcome-content > .welcome-tagline {
   margin: 0 0 25px;
-  color: #587365;
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: clamp(20px, 3vw, 25px);
-  line-height: 1.5;
+  color: #0F3C65;
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
+  font-size: clamp(16px, 2vw, 20px);
+  line-height: 1.6;
 }
 
 .welcome-content .auth-modal {
   padding: 22px 24px;
-  border-color: #dce4d8;
-  border-radius: 18px;
-  background: #fffdf5;
-  box-shadow: 0 10px 30px #174d4010;
+  border-color: #013137;
+  border-radius: 16px;
+  background: #fff9dc;
+  box-shadow: 0 10px 30px #01313712;
   text-align: left;
 }
 
@@ -1724,37 +1720,45 @@ button:disabled {
 
 .welcome-content .auth-modal input {
   padding: 11px 12px;
-  border-color: #dce4d8;
-  border-radius: 11px;
-  background: #fffefb;
+  border-color: #b8c9c6;
+  border-radius: 8px;
+  background: #fffdf1;
 }
 
 .welcome-content .auth-modal input:focus {
-  border-color: #a8c86b;
-  outline: 2px solid #a8c86b55;
+  border-color: #0F3C65;
+  outline: 2px solid #0F3C6533;
 }
 
 .welcome-content .auth-modal .primary-button {
   margin-top: 3px;
-  border-color: #174d40;
-  background: #174d40;
-  color: #fffdf5;
+  border-color: #013137;
+  background: #013137;
+  color: #FFF2BA;
 }
 
 .welcome-content .auth-modal .primary-button:hover {
-  background: #286555;
+  background: #0F3C65;
 }
 
 .welcome-content .auth-modal .text-button {
   margin-top: 9px;
-  color: #174d40;
+  color: #013137;
 }
 
 .welcome-foot {
-  color: #587365;
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: 15px;
-  letter-spacing: 0.04em;
+  position: absolute;
+  right: clamp(20px, 6vw, 76px);
+  bottom: 24px;
+  z-index: 2;
+  padding: 0;
+  color: #0F3C65;
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-align: right;
+  text-transform: uppercase;
 }
 
 @media (max-width: 640px) {
@@ -1763,12 +1767,18 @@ button:disabled {
   }
 
   .welcome-content {
-    padding: 22px 0;
+    padding: 22px 0 52px;
   }
 
   .welcome-content > h1 {
-    font-size: clamp(42px, 11vw, 60px);
-    line-height: 1.08;
+    font-size: clamp(48px, 12vw, 76px);
+    line-height: 0.98;
+  }
+
+  .welcome-foot {
+    right: 20px;
+    bottom: 18px;
+    font-size: 10px;
   }
 
   .welcome-content > .welcome-tagline {
