@@ -14,12 +14,12 @@
 ======================================== */
 
 :root {
-  --ink: #183f35;
-  --muted: #718178;
-  --line: #dce4d8;
-  --paper: #fffdf5;
-  --accent: #a8c86b;
-  --soft: #f4eed9;
+  --ink: #013137;
+  --muted: #647b78;
+  --line: #dce5df;
+  --paper: #fffdf7;
+  --accent: #0F3C65;
+  --soft: #FFF9EC;
 
   font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
   color: var(--ink);
@@ -83,7 +83,7 @@ button:disabled {
 .icon-button,
 .text-button,
 .back-calendar {
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
 }
 
 /* Login page heading: keep the main title readable */
@@ -92,9 +92,9 @@ button:disabled {
 }
 
 .welcome-content > h1 em {
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
   font-style: normal;
-  color: #174d40;
+  color: #013137;
 }
 
 /* Keep long diary content easy to read */
@@ -159,7 +159,7 @@ button:disabled {
   place-items: center;
 
   border-radius: 50%;
-  background: #174d40;
+  background: #013137;
   color: var(--soft);
 }
 
@@ -173,7 +173,7 @@ button:disabled {
   padding: 8px 12px;
   border-radius: 99px;
 
-  background: #f5eee5;
+  background: #F4F3EB;
   color: var(--muted);
   font-size: 13px;
 }
@@ -208,7 +208,7 @@ button:disabled {
 .intro h1 {
   margin: 16px 0 11px;
 
-  color: #174d40;
+  color: #013137;
   font-size: clamp(42px, 7vw, 66px);
   font-weight: 500;
   line-height: 0.98;
@@ -218,7 +218,7 @@ button:disabled {
 .intro p {
   margin: 0;
 
-  color: #587365;
+  color: #315c5a;
   font-size: 14px;
   line-height: 1.8;
 }
@@ -235,7 +235,7 @@ button:disabled {
   border-radius: 22px;
 
   background: var(--paper);
-  box-shadow: 0 8px 24px #174d400a;
+  box-shadow: 0 8px 24px #0131370a;
 }
 
 .calendar-card {
@@ -291,7 +291,7 @@ button:disabled {
 
   border: 1px solid #d3ddce;
   background: transparent;
-  color: #174d40;
+  color: #013137;
 }
 
 .icon-button:hover,
@@ -304,17 +304,17 @@ button:disabled {
 
   border: 1px solid #d3ddce;
   background: var(--paper);
-  color: #174d40;
+  color: #013137;
   font-size: 13px;
 }
 
 .primary-button {
   padding: 12px 17px;
 
-  border: 1px solid #174d40;
+  border: 1px solid #013137;
   border-radius: 14px;
 
-  background: #174d40;
+  background: #013137;
   color: var(--paper);
   font-size: 13px;
   font-weight: 600;
@@ -333,7 +333,7 @@ button:disabled {
 
   border: 0;
   background: transparent;
-  color: #174d40;
+  color: #013137;
   font-size: 12px;
 }
 
@@ -351,7 +351,7 @@ button:disabled {
 
   border: 0;
   background: transparent;
-  color: #174d40;
+  color: #013137;
   font-weight: 600;
 }
 
@@ -411,14 +411,14 @@ button:disabled {
 }
 
 .day-cell.selected {
-  border-color: #174d40;
-  background: #174d40;
+  border-color: #013137;
+  background: #013137;
   color: var(--paper);
   font-weight: 700;
 }
 
 .day-cell.today {
-  outline: 2px solid #a8c86b;
+  outline: 2px solid #0F3C65;
   outline-offset: -3px;
 }
 
@@ -484,7 +484,7 @@ button:disabled {
 
   background: var(--paper);
   color: var(--ink);
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
   font-size: 12px;
 }
 
@@ -580,7 +580,7 @@ button:disabled {
   flex-direction: column;
   gap: 7px;
 
-  color: #456456;
+  color: #315c5a;
   font-size: 12px;
 }
 
@@ -811,7 +811,7 @@ button:disabled {
   border: 0;
   border-radius: 10px;
 
-  background: #174d40;
+  background: #013137;
   color: white;
 }
 
@@ -823,7 +823,7 @@ button:disabled {
   border-radius: 10px;
 
   background: #faf6f0;
-  color: #174d40;
+  color: #013137;
   font-size: 12px;
 }
 
@@ -980,7 +980,7 @@ button:disabled {
   padding: 16px;
 
   border-radius: 12px;
-  background: #f5eee5;
+  background: #F4F3EB;
   color: #776a5e;
   font-size: 12px;
   line-height: 1.9;
@@ -990,7 +990,7 @@ button:disabled {
 .setup-note code {
   padding: 2px 5px;
   border-radius: 4px;
-  background: #e9dfd3;
+  background: #e8e8df;
   font-size: 11px;
 }
 
@@ -1009,8 +1009,8 @@ button:disabled {
   padding: 28px clamp(20px, 6vw, 76px);
   overflow: hidden;
 
-  background: #f4eed9;
-  color: #174d40;
+  background: #FFF9EC;
+  color: #013137;
 }
 
 .welcome-screen::before {
@@ -1023,7 +1023,7 @@ button:disabled {
   height: 320px;
 
   border-radius: 48% 52% 61% 39%;
-  background: #e4d9f5;
+  background: #e8eee9;
   opacity: 0.75;
   transform: rotate(24deg);
 }
@@ -1038,7 +1038,7 @@ button:disabled {
   height: 180px;
 
   border-radius: 50%;
-  background: #e7edc9;
+  background: #e5eee8;
   opacity: 0.8;
 }
 
@@ -1051,7 +1051,7 @@ button:disabled {
 }
 
 .welcome-brand span {
-  color: #d95670;
+  color: #0F3C65;
 }
 
 .welcome-content {
@@ -1068,7 +1068,7 @@ button:disabled {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.18em;
-  font-family: "Jewsworld", sans-serif;
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
 }
 
 .welcome-content > h1 {
@@ -1078,7 +1078,7 @@ button:disabled {
   font-weight: 600;
   line-height: 0.92;
   letter-spacing: -0.04em;
-  font-family: "Jewsworld", sans-serif;
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
 }
 
 .welcome-content > h1 em {
@@ -1087,7 +1087,7 @@ button:disabled {
 
 .welcome-content > p {
   margin-bottom: 26px;
-  color: #587365;
+  color: #315c5a;
   line-height: 1.8;
 }
 
@@ -1102,11 +1102,11 @@ button:disabled {
   width: 100%;
   padding: 26px;
 
-  border: 1px solid #e1e5d5;
+  border: 1px solid #dce5df;
   border-radius: 24px;
 
-  background: #fffdf5;
-  box-shadow: 0 14px 40px #174d4010;
+  background: #fffdf7;
+  box-shadow: 0 14px 40px #01313710;
 }
 
 .welcome-content .auth-modal .close {
@@ -1114,7 +1114,7 @@ button:disabled {
 }
 
 .welcome-content .auth-modal h2 {
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
   font-size: 32px;
 }
 
@@ -1124,17 +1124,17 @@ button:disabled {
 }
 
 .welcome-content .auth-modal label {
-  color: #456456;
+  color: #315c5a;
 }
 
 .welcome-content .auth-modal input {
   border-color: #dce4d8;
   border-radius: 13px;
-  background: #fffefb;
+  background: #fffdf7;
 }
 
 .welcome-content .text-button {
-  color: #174d40;
+  color: #013137;
 }
 
 .welcome-foot {
@@ -1192,13 +1192,13 @@ button:disabled {
   border-radius: 12px;
 
   background: var(--paper);
-  color: #587365;
+  color: #315c5a;
   font-size: 12px;
 }
 
 .composer-mode button.mode-active {
-  border-color: #174d40;
-  background: #174d40;
+  border-color: #013137;
+  background: #013137;
   color: var(--paper);
 }
 
@@ -1224,7 +1224,7 @@ button:disabled {
   border-radius: 15px;
 
   background: var(--paper);
-  box-shadow: 0 5px 16px #174d4008;
+  box-shadow: 0 5px 16px #01313708;
 }
 
 .note-memory {
@@ -1273,7 +1273,7 @@ button:disabled {
 
   margin: 0 0 12px;
 
-  color: #587365;
+  color: #315c5a;
   font-size: 11px;
   line-height: 1.75;
   white-space: pre-wrap;
@@ -1291,7 +1291,7 @@ button:disabled {
 
   border: 0;
   background: transparent;
-  color: #174d40;
+  color: #013137;
   font-size: 10px;
   font-weight: 600;
 }
@@ -1392,7 +1392,7 @@ button:disabled {
 }
 
 .memory-photo-button:focus-visible {
-  outline: 2px solid #174d40;
+  outline: 2px solid #013137;
   outline-offset: 3px;
 }
 
@@ -1403,7 +1403,7 @@ button:disabled {
   padding: 4px 6px;
   border-radius: 7px;
   background: #fffdf0e8;
-  color: #174d40;
+  color: #013137;
   font-size: 9px;
 }
 
@@ -1432,7 +1432,7 @@ button:disabled {
   max-height: 55vh;
   overflow: auto;
 
-  color: #456456;
+  color: #315c5a;
   font-size: 14px;
   line-height: 1.95;
   white-space: pre-wrap;
@@ -1626,14 +1626,14 @@ button:disabled {
 .intro .eyebrow,
 .intro p,
 .calendar-head .eyebrow {
-  font-family: "Jewsworld", cursive;
+  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
 }
 }
   
 
 /* Welcome screen — cinematic minimal palette */
 .welcome-screen {
-  background: #FFF2BA;
+  background: #FFF9EC;
   color: #013137;
 }
 
@@ -1697,7 +1697,7 @@ button:disabled {
   padding: 22px 24px;
   border-color: #013137;
   border-radius: 16px;
-  background: #fff9dc;
+  background: #FFFCF4;
   box-shadow: 0 10px 30px #01313712;
   text-align: left;
 }
@@ -1734,7 +1734,7 @@ button:disabled {
   margin-top: 3px;
   border-color: #013137;
   background: #013137;
-  color: #FFF2BA;
+  color: #FFF9EC;
 }
 
 .welcome-content .auth-modal .primary-button:hover {
@@ -1845,7 +1845,7 @@ button:disabled {
   border: 0;
   border-radius: 50%;
   background: rgba(255, 253, 245, 0.92);
-  color: #174d40;
+  color: #013137;
   cursor: pointer;
 }
 
@@ -1890,3 +1890,33 @@ button:disabled {
     transition: none;
   }
 }
+
+/* ========================================
+   FINAL DESIGN OVERRIDES — Cream Gelato
+======================================== */
+:root {
+  --ink: #013137;
+  --muted: #647b78;
+  --line: #dce5df;
+  --paper: #fffdf7;
+  --accent: #0F3C65;
+  --soft: #FFF9EC;
+}
+
+body, .app-shell { background: #FFF9EC; color: #013137; }
+.topbar { background: rgba(255, 249, 236, 0.94); border-color: #dce5df; }
+.brand, .calendar-head h2, .section-heading h2, .intro h1, .post-card h3,
+.empty-state h3, .note-memory h3, .note-detail h2 { color: #013137; }
+.brand-mark { background: #013137; color: #FFF9EC; }
+.primary-button { background: #013137; border-color: #013137; color: #FFF9EC; }
+.primary-button:hover { background: #0F3C65; border-color: #0F3C65; }
+.outline-button { color: #013137; border-color: #0F3C65; }
+.day-cell.is-selected, .calendar-day.selected { background: #0F3C65; color: #FFF9EC; }
+.post-card, .note-memory, .auth-modal, .composer, .comment-card { background: #fffdf7; border-color: #dce5df; }
+.welcome-screen { background: #FFF9EC; color: #013137; }
+.welcome-content > h1 { font-family: 'Cormorant Garamond', Georgia, serif; color: #013137; }
+.welcome-content > .welcome-tagline { color: #0F3C65; }
+.welcome-content .auth-modal { background: #FFFCF4; border-color: #dce5df; }
+.welcome-content .auth-modal .primary-button { background: #013137; border-color: #013137; color: #FFF9EC; }
+.welcome-content .auth-modal .primary-button:hover { background: #0F3C65; }
+.welcome-foot { color: #0F3C65; }
