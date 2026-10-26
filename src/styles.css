@@ -1,3 +1,7 @@
+/* ========================================
+   1. Global styles
+======================================== */
+
 * {
   box-sizing: border-box;
 }
@@ -12,7 +16,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   min-height: 100%;
   margin: 0;
   background: #fff;
@@ -23,7 +29,8 @@ body {
   min-height: 100vh;
 }
 
-button, input, select {
+button,
+input {
   font: inherit;
 }
 
@@ -32,7 +39,8 @@ button {
   cursor: pointer;
 }
 
-button:focus-visible, input:focus-visible, select:focus-visible {
+button:focus-visible,
+input:focus-visible {
   outline: 1px solid #777;
   outline-offset: 4px;
 }
@@ -42,120 +50,254 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   background: #fff;
 }
 
+
+/* ========================================
+   2. Top navigation
+======================================== */
+
 .site-header {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 5;
+
   display: flex;
   align-items: center;
-  gap: clamp(20px, 4vw, 64px);
+  gap: clamp(20px, 3vw, 42px);
+
   width: 100%;
   padding: 24px clamp(18px, 3.2vw, 48px);
 }
 
-.nav-link, .back-link, .delete-link {
+.nav-link,
+.back-link,
+.delete-link {
   padding: 0;
   border: 0;
   background: transparent;
   color: #111;
+
   font-size: 12px;
   font-weight: 400;
   text-decoration: none;
 }
 
-.nav-link:hover, .back-link:hover, .delete-link:hover {
-  opacity: .55;
+.nav-link:hover,
+.back-link:hover,
+.delete-link:hover {
+  opacity: 0.55;
 }
 
-.home-page, .about-page {
+
+/* ========================================
+   3. Home page
+======================================== */
+
+.home-page,
+.about-page {
   display: grid;
+  min-height: 100vh;
   min-height: 100svh;
+
   place-items: center;
   padding: 80px 24px;
 }
 
-.home-copy, .about-page p {
+.home-copy,
+.about-page p {
   text-align: center;
+
   font-size: clamp(14px, 1.25vw, 17px);
   line-height: 1.55;
   font-weight: 400;
-  letter-spacing: -.025em;
+  letter-spacing: -0.025em;
 }
 
-.home-copy p, .about-page p {
+.home-copy p,
+.about-page p {
   margin: 0;
+}
+
+
+/* ========================================
+   4. Diary date picker
+======================================== */
+
+.diary-page {
+  min-height: 100vh;
+  min-height: 100svh;
 }
 
 .date-picker {
   display: grid;
+
+  min-height: 100vh;
   min-height: 100svh;
+
   align-content: center;
   justify-items: center;
-  padding: 90px 20px 50px;
+
+  padding: 80px 16px 40px;
 }
 
 .date-columns {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  gap: clamp(12px, 3.8vw, 54px);
+
+  gap: clamp(8px, 2.5vw, 32px);
 }
+
+/*
+  Year and day start lower than the star.
+  This aligns all three number wheels horizontally.
+*/
 
 .wheel-wrap {
   display: block;
+  flex: 0 1 auto;
   min-width: 0;
+
+  margin-top: 27px;
 }
+
+
+/* ========================================
+   5. iPhone-style scrolling date wheel
+======================================== */
+
+/*
+  Each wheel displays three rows:
+  previous number / selected number / next number.
+
+  The user can swipe vertically.
+  The selected number settles in the middle.
+*/
 
 .date-wheel {
-  width: clamp(88px, 15vw, 160px);
+  display: flex;
+  flex-direction: column;
+
+  width: clamp(82px, 15vw, 150px);
+  height: 144px;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
   border: 0;
   border-radius: 0;
-  appearance: none;
+  outline: none;
+
+  background: #fff;
+
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: auto;
+
+  -webkit-overflow-scrolling: touch;
   -webkit-appearance: none;
-  background: transparent;
-  color: #111;
-  padding: 12px 0;
-  text-align: center;
-  text-align-last: center;
-  font-size: clamp(22px, 4.4vw, 46px);
-  font-weight: 400;
-  letter-spacing: -.055em;
-  cursor: ns-resize;
+
+  touch-action: pan-y;
+  scrollbar-width: none;
 }
 
-.date-wheel option {
-  font-size: 20px;
+.date-wheel::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+  One empty row above and below the list
+  lets the first and last values reach the center.
+*/
+
+.wheel-spacer {
+  display: block;
+  flex: 0 0 48px;
+  width: 100%;
+  height: 48px;
+  pointer-events: none;
+}
+
+.date-wheel-item {
+  display: flex;
+  flex: 0 0 48px;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+
   background: #fff;
+  color: #c9c9c9;
+
+  font-size: clamp(22px, 4.4vw, 42px);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 1;
+
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.date-wheel-item.is-selected {
   color: #111;
 }
+
+.date-wheel-item:focus {
+  outline: none;
+}
+
+/*
+  Month and star.
+*/
 
 .month-column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .star-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 27px;
+  flex: 0 0 27px;
+
+  padding: 0 8px 2px;
   border: 0;
-  padding: 0 8px 3px;
   background: transparent;
-  font-size: clamp(17px, 2.2vw, 23px);
+
+  color: #111;
+  font-size: 20px;
   line-height: 1;
-  transition: transform .18s ease;
+
+  transition: transform 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .star-button:hover {
-  transform: rotate(18deg) scale(1.1);
+  transform: rotate(18deg) scale(1.08);
 }
 
-.date-hint {
-  margin: 20px 0 0;
-  color: #aaa;
-  font-size: 10px;
-  letter-spacing: .08em;
-}
+
+/* ========================================
+   6. Photo gallery
+======================================== */
 
 .gallery-page {
   min-height: 100vh;
@@ -166,69 +308,18 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   margin-bottom: 24px;
+
   font-size: 12px;
-}
-
-.upload-form {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 0 24px;
-  padding: 12px 0;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-}
-
-.file-label {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  min-height: 34px;
-  padding: 0 10px;
-  border: 1px solid #ddd;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.file-label input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.caption-input {
-  flex: 1;
-  min-width: 0;
-  min-height: 34px;
-  padding: 0 10px;
-  border: 1px solid #ddd;
-  border-radius: 0;
-  font-size: 12px;
-}
-
-.plain-button {
-  min-height: 34px;
-  padding: 0 14px;
-  border: 1px solid #111;
-  border-radius: 0;
-  background: #111;
-  color: #fff;
-  font-size: 12px;
-}
-
-.plain-button:disabled {
-  opacity: .45;
-  cursor: wait;
 }
 
 .photo-gallery {
   display: grid;
+
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: clamp(12px, 1.1vw, 18px);
+
   align-items: start;
 }
 
@@ -237,32 +328,350 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   margin: 0;
 }
 
-.photo-item img {
+.photo-open {
   display: block;
   width: 100%;
+
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+
+  background: #f5f5f5;
+  cursor: zoom-in;
+}
+
+.photo-item img {
+  display: block;
+
+  width: 100%;
   aspect-ratio: 4 / 3;
+
   object-fit: cover;
   background: #f5f5f5;
 }
 
 .photo-title {
   margin: 7px 0 0;
+
   overflow: hidden;
+
   color: #111;
   font-size: 12px;
   font-weight: 400;
   line-height: 1.35;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .delete-link {
+  display: block;
   margin-top: 7px;
+
   color: #777;
   font-size: 10px;
 }
 
-.subtle-message, .error-message, .config-warning {
+
+/* ========================================
+   7. Admin upload form
+======================================== */
+
+.upload-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin: 0 0 24px;
+  padding: 12px 0;
+
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.file-label {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+
+  max-width: 45%;
+  min-height: 34px;
+
+  padding: 0 10px;
+  border: 1px solid #ddd;
+
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.file-label span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-label input {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  opacity: 0;
+  cursor: pointer;
+}
+
+.caption-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 34px;
+
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 0;
+
+  background: #fff;
+  color: #111;
+  font-size: 12px;
+}
+
+.plain-button {
+  min-height: 34px;
+
+  padding: 0 14px;
+  border: 1px solid #111;
+  border-radius: 0;
+
+  background: #111;
+  color: #fff;
+
+  font-size: 12px;
+}
+
+.plain-button:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+
+
+/* ========================================
+   8. Full-screen photo viewer
+======================================== */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+
+  display: grid;
+
+  grid-template-columns: 64px minmax(0, 1fr) 64px;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+
+  align-items: center;
+  justify-items: center;
+
+  padding: 42px 18px 22px;
+
+  background: rgba(255, 255, 255, 0.97);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  z-index: 2;
+
+  border: 0;
+  background: transparent;
+
+  font-size: 28px;
+  font-weight: 300;
+}
+
+.lightbox-image-button {
+  grid-column: 2;
+  grid-row: 1;
+
+  display: flex;
+
+  width: 100%;
+  height: 100%;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  border: 0;
+
+  background: transparent;
+  cursor: default;
+}
+
+.lightbox-image-button img {
+  display: block;
+
+  max-width: 100%;
+  max-height: calc(100svh - 120px);
+
+  object-fit: contain;
+}
+
+.lightbox-arrow {
+  z-index: 1;
+
+  align-self: stretch;
+  width: 100%;
+
+  padding: 0;
+  border: 0;
+
+  background: transparent;
+
+  font-size: 42px;
+  font-weight: 300;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lightbox-arrow:hover {
+  opacity: 0.5;
+}
+
+.lightbox-prev {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.lightbox-next {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.lightbox-caption {
+  grid-column: 1 / -1;
+  grid-row: 2;
+
+  margin: 12px 0 0;
+
+  font-size: 12px;
+  text-align: center;
+}
+
+.lightbox-count {
+  grid-column: 1 / -1;
+  grid-row: 3;
+
+  margin: 8px 0 0;
+
+  color: #999;
+  font-size: 10px;
+}
+
+
+/* ========================================
+   9. Login modal
+======================================== */
+
+.modal-shade {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+
+  display: grid;
+  place-items: center;
+
+  padding: 20px;
+
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.login-panel {
+  position: relative;
+
+  width: min(100%, 340px);
+
+  padding: 34px 28px 28px;
+  border: 1px solid #ddd;
+
+  background: #fff;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+
+  border: 0;
+  background: transparent;
+
+  font-size: 23px;
+  font-weight: 300;
+}
+
+.tiny-label {
+  margin: 0 0 14px;
+
+  color: #888;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+.login-panel h2 {
+  margin: 0 0 24px;
+
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.login-form label {
+  display: grid;
+  gap: 7px;
+
+  font-size: 12px;
+}
+
+.login-form input {
+  width: 100%;
+  min-height: 38px;
+
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 0;
+
+  background: #fff;
+  color: #111;
+  font-size: 13px;
+}
+
+.login-form .plain-button {
+  margin-top: 4px;
+}
+
+.form-message {
+  margin: 14px 0 0;
+
+  color: #a22;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+
+/* ========================================
+   10. Status messages
+======================================== */
+
+.subtle-message,
+.error-message,
+.config-warning {
   font-size: 12px;
   line-height: 1.6;
 }
@@ -279,86 +688,20 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   position: fixed;
   right: 12px;
   bottom: 12px;
+  z-index: 10;
+
   max-width: 360px;
+
   padding: 10px 12px;
-  background: #fff;
   border: 1px solid #ddd;
-}
 
-.modal-shade {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: rgb(255 255 255 / 78%);
-  backdrop-filter: blur(5px);
-}
-
-.login-panel {
-  position: relative;
-  width: min(100%, 340px);
-  padding: 34px 28px 28px;
-  border: 1px solid #ddd;
   background: #fff;
 }
 
-.modal-close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  border: 0;
-  background: transparent;
-  font-size: 23px;
-  font-weight: 300;
-}
 
-.tiny-label {
-  margin: 0 0 14px;
-  color: #888;
-  font-size: 9px;
-  letter-spacing: .14em;
-}
-
-.login-panel h2 {
-  margin: 0 0 24px;
-  font-size: 22px;
-  font-weight: 400;
-}
-
-.login-form {
-  display: grid;
-  gap: 16px;
-}
-
-.login-form label {
-  display: grid;
-  gap: 7px;
-  font-size: 12px;
-}
-
-.login-form input {
-  width: 100%;
-  min-height: 38px;
-  padding: 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 0;
-  background: #fff;
-  color: #111;
-  font-size: 13px;
-}
-
-.login-form .plain-button {
-  margin-top: 4px;
-}
-
-.form-message {
-  margin: 14px 0 0;
-  color: #a22;
-  font-size: 12px;
-  line-height: 1.5;
-}
+/* ========================================
+   11. Tablet layout
+======================================== */
 
 @media (max-width: 900px) {
   .photo-gallery {
@@ -366,9 +709,14 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   }
 }
 
+
+/* ========================================
+   12. Mobile / iPhone
+======================================== */
+
 @media (max-width: 600px) {
   .site-header {
-    gap: 28px;
+    gap: 24px;
     padding: 20px 18px;
   }
 
@@ -376,14 +724,56 @@ button:focus-visible, input:focus-visible, select:focus-visible {
     font-size: 12px;
   }
 
+  /*
+    The three wheels share the same horizontal baseline.
+    The star stays above the month only.
+  */
+
+  .date-picker {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
   .date-columns {
-    gap: 8px;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .wheel-wrap {
+    margin-top: 27px;
   }
 
   .date-wheel {
-    width: clamp(76px, 25vw, 105px);
+    width: clamp(78px, 25vw, 105px);
+    height: 144px;
+
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+
+    scroll-snap-type: y mandatory;
+    touch-action: pan-y;
+  }
+
+  .date-wheel-item {
+    flex-basis: 48px;
+    height: 48px;
+    min-height: 48px;
+
     font-size: clamp(23px, 7vw, 34px);
   }
+
+  .month-column {
+    margin-top: 0;
+  }
+
+  .star-button {
+    height: 27px;
+    flex-basis: 27px;
+
+    font-size: 19px;
+  }
+
+  /* Gallery: always two columns on mobile. */
 
   .gallery-page {
     padding: 72px 10px 22px;
@@ -408,12 +798,41 @@ button:focus-visible, input:focus-visible, select:focus-visible {
     font-size: 11px;
   }
 
+  /* Mobile upload form. */
+
   .upload-form {
     flex-wrap: wrap;
   }
 
+  .file-label {
+    max-width: 100%;
+    flex: 1;
+  }
+
   .caption-input {
-    flex-basis: 100%;
     order: 3;
+    flex-basis: 100%;
+  }
+
+  /* Full-screen mobile photo viewer. */
+
+  .lightbox {
+    grid-template-columns: 34px minmax(0, 1fr) 34px;
+
+    padding: 42px 6px 18px;
+  }
+
+  .lightbox-arrow {
+    font-size: 32px;
+  }
+
+  .lightbox-image-button img {
+    max-width: 100%;
+    max-height: calc(100svh - 120px);
+  }
+
+  .lightbox-close {
+    top: 12px;
+    right: 14px;
   }
 }
