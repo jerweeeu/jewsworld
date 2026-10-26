@@ -778,7 +778,12 @@ function App() {
                   <img
                     src={item.url}
                     alt={item.title || 'Diary photo'}
-                    loading="lazy"
+                    loading="eager"
+                    onLoad={() => console.log('Photo loaded:', item.url)}
+                    onError={(event) => {
+                    console.error('Photo failed:', item.url);
+                    console.error('Image element:', event.currentTarget);
+                    }}
                   />
                 </button>
 
