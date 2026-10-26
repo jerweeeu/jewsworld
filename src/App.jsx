@@ -14,7 +14,7 @@ const getErrorMessage = (error) =>
   error?.message || 'Something went wrong. Please try again.';
 
 /* ========================================
-   iPhone-style scrolling date wheel
+   Single-value touch scrolling date wheel
 ======================================== */
 
 function DateWheel({
@@ -26,13 +26,11 @@ function DateWheel({
 }) {
   const wheelRef = useRef(null);
   const timerRef = useRef(null);
-
   const ROW_HEIGHT = 48;
 
-  // Position the selected value in the center.
+  // Keep the selected number aligned in the visible row.
   useEffect(() => {
     const wheel = wheelRef.current;
-
     if (!wheel) return;
 
     const index = values.indexOf(Number(value));
@@ -42,10 +40,9 @@ function DateWheel({
     }
   }, [value, values]);
 
-  // Wait until the user stops scrolling, then snap to a value.
+  // When scrolling stops, snap to the closest number.
   function handleScroll() {
     const wheel = wheelRef.current;
-
     if (!wheel) return;
 
     window.clearTimeout(timerRef.current);
@@ -72,7 +69,6 @@ function DateWheel({
     }, 100);
   }
 
-  // Allow mouse-wheel scrolling on desktop.
   function handleWheel(event) {
     event.preventDefault();
 
@@ -81,7 +77,6 @@ function DateWheel({
     }
   }
 
-  // Allow keyboard controls for accessibility.
   function handleKeyDown(event) {
     if (
       event.key !== 'ArrowUp' &&
@@ -121,9 +116,6 @@ function DateWheel({
         tabIndex={0}
         aria-label={`${label}: ${value}`}
       >
-        {/* Empty space above the first number */}
-        <div className="wheel-spacer" aria-hidden="true" />
-
         {values.map((item) => (
           <button
             type="button"
@@ -150,9 +142,6 @@ function DateWheel({
               : item}
           </button>
         ))}
-
-        {/* Empty space below the last number */}
-        <div className="wheel-spacer" aria-hidden="true" />
       </div>
     </div>
   );
@@ -220,16 +209,11 @@ function LoginPanel({ onClose, onLogin }) {
         </button>
 
         <p className="tiny-label">ADMIN ACCESS</p>
-
         <h2>log in</h2>
 
-        <form
-          className="login-form"
-          onSubmit={submit}
-        >
+        <form className="login-form" onSubmit={submit}>
           <label>
             <span>Email</span>
-
             <input
               type="email"
               autoComplete="username"
@@ -243,7 +227,6 @@ function LoginPanel({ onClose, onLogin }) {
 
           <label>
             <span>Password</span>
-
             <input
               type="password"
               autoComplete="current-password"
@@ -285,7 +268,6 @@ function App() {
   const [session, setSession] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Initial date = today's actual date.
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [day, setDay] = useState(today.getDate());
@@ -298,7 +280,6 @@ function App() {
   const [caption, setCaption] = useState('');
   const [uploading, setUploading] = useState(false);
 
-  // null means the photo viewer is closed.
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
   const selectedDate = dateKey(year, month, day);
@@ -313,11 +294,7 @@ function App() {
   );
 
   const monthValues = useMemo(
-    () =>
-      Array.from(
-        { length: 12 },
-        (_, index) => index + 1
-      ),
+    () => Array.from({ length: 12 }, (_, index) => index + 1),
     []
   );
 
@@ -330,10 +307,7 @@ function App() {
     [year, month]
   );
 
-  /* --------------------------------------
-     Restore login session and listen
-     for authentication changes.
-  -------------------------------------- */
+  /* Restore login session. */
 
   useEffect(() => {
     if (!supabaseConfigured || !supabase) {
@@ -363,7 +337,6 @@ function App() {
     } = supabase.auth.onAuthStateChange(
       (_event, nextSession) => {
         setSession(nextSession);
-
         setIsAdmin(
           nextSession?.user?.app_metadata?.role === 'admin'
         );
@@ -376,10 +349,7 @@ function App() {
     };
   }, []);
 
-  /* --------------------------------------
-     Keep the selected day valid when
-     changing the year or month.
-  -------------------------------------- */
+  /* Keep day valid when year or month changes. */
 
   useEffect(() => {
     const maximumDay = daysInMonth(year, month);
@@ -389,14 +359,10 @@ function App() {
     }
   }, [year, month, day]);
 
-  /* --------------------------------------
-     Load published diary photos.
-  -------------------------------------- */
+  /* Load published diary posts and their photos. */
 
   async function loadPosts() {
-    if (!supabaseConfigured || !supabase) {
-      return;
-    }
+    if (!supabaseConfigured || !supabase) return;
 
     setBusy(true);
     setError('');
@@ -415,10 +381,8 @@ function App() {
 
       const normalized = (data || []).map((post) => ({
         ...post,
-
         photos: (post.post_photos || []).map((photo) => ({
           ...photo,
-
           url: supabase.storage
             .from('public-post-photos')
             .getPublicUrl(photo.storage_path).data.publicUrl,
@@ -437,31 +401,25 @@ function App() {
     loadPosts();
   }, [session?.user?.id]);
 
-  /* --------------------------------------
-     Get photos for the selected date.
-  -------------------------------------- */
+  const galleryItems = useMemo(
+    () =>
+      posts
+        .filter((post) => post.entry_date === selectedDate)
+        .flatMap((post) =>
+          (post.photos || []).map((photo) => ({
+            id: photo.id,
+            url: photo.url,
+            title: post.title || photo.caption || '',
+            post,
+          }))
+        ),
+    [posts, selectedDate]
+  );
 
-  const galleryItems = useMemo(() => {
-    return posts
-      .filter((post) => post.entry_date === selectedDate)
-      .flatMap((post) =>
-        (post.photos || []).map((photo) => ({
-          id: photo.id,
-          url: photo.url,
-          title: post.title || photo.caption || '',
-          post,
-        }))
-      );
-  }, [posts, selectedDate]);
-
-  /* --------------------------------------
-     Photo viewer keyboard controls.
-  -------------------------------------- */
+  /* Photo viewer keyboard navigation. */
 
   useEffect(() => {
-    if (lightboxIndex === null) {
-      return undefined;
-    }
+    if (lightboxIndex === null) return undefined;
 
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
@@ -489,42 +447,27 @@ function App() {
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener(
-        'keydown',
-        handleKeyDown
-      );
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [lightboxIndex, galleryItems.length]);
 
-  /* --------------------------------------
-     Date changes.
-  -------------------------------------- */
+  /* Date changes. */
 
   function changeYear(nextYear) {
     setYear(nextYear);
-
     setDay((currentDay) =>
-      Math.min(
-        currentDay,
-        daysInMonth(nextYear, month)
-      )
+      Math.min(currentDay, daysInMonth(nextYear, month))
     );
   }
 
   function changeMonth(nextMonth) {
     setMonth(nextMonth);
-
     setDay((currentDay) =>
-      Math.min(
-        currentDay,
-        daysInMonth(year, nextMonth)
-      )
+      Math.min(currentDay, daysInMonth(year, nextMonth))
     );
   }
 
-  /* --------------------------------------
-     Upload one photo and its title.
-  -------------------------------------- */
+  /* Upload a photo with a one-line title. */
 
   async function uploadPhoto(event) {
     event.preventDefault();
@@ -553,32 +496,28 @@ function App() {
     let uploadedStoragePath = null;
 
     try {
-      // Create the diary post first.
-      const { data: post, error: postError } =
-        await supabase
-          .from('diary_posts')
-          .insert({
-            title: caption.trim(),
-            body: '',
-            entry_date: selectedDate,
-            status: 'published',
-            author_id: session.user.id,
-          })
-          .select('id')
-          .single();
+      const { data: post, error: postError } = await supabase
+        .from('diary_posts')
+        .insert({
+          title: caption.trim(),
+          body: '',
+          entry_date: selectedDate,
+          status: 'published',
+          author_id: session.user.id,
+        })
+        .select('id')
+        .single();
 
       if (postError) throw postError;
 
       createdPostId = post.id;
 
       const extension =
-        uploadFile.name.split('.').pop()?.toLowerCase() ||
-        'jpg';
+        uploadFile.name.split('.').pop()?.toLowerCase() || 'jpg';
 
       const storagePath =
         `${post.id}/${crypto.randomUUID()}.${extension}`;
 
-      // Upload the actual image.
       const { error: storageError } = await supabase.storage
         .from('public-post-photos')
         .upload(storagePath, uploadFile, {
@@ -590,7 +529,6 @@ function App() {
 
       uploadedStoragePath = storagePath;
 
-      // Link the image to the post.
       const { error: photoError } = await supabase
         .from('post_photos')
         .insert({
@@ -603,15 +541,12 @@ function App() {
 
       setUploadFile(null);
       setCaption('');
-
       event.target.reset();
 
       await loadPosts();
     } catch (uploadError) {
       setError(getErrorMessage(uploadError));
 
-      // Avoid leaving a newly created empty post if a later
-      // step fails. Cleanup errors are logged for diagnosis.
       if (createdPostId && supabase) {
         if (uploadedStoragePath) {
           const { error: cleanupStorageError } =
@@ -638,10 +573,6 @@ function App() {
     }
   }
 
-  /* --------------------------------------
-     Logout.
-  -------------------------------------- */
-
   async function logOut() {
     if (supabase) {
       const { error: logoutError } =
@@ -657,14 +588,8 @@ function App() {
     setIsAdmin(false);
   }
 
-  /* --------------------------------------
-     Render.
-  -------------------------------------- */
-
   return (
     <div className="site-shell">
-
-      {/* Top navigation */}
       <header className="site-header">
         <button
           className="nav-link"
@@ -688,10 +613,7 @@ function App() {
         </button>
 
         {isAdmin ? (
-          <button
-            className="nav-link"
-            onClick={logOut}
-          >
+          <button className="nav-link" onClick={logOut}>
             log out
           </button>
         ) : (
@@ -704,7 +626,7 @@ function App() {
         )}
       </header>
 
-      {/* HOME */}
+      {/* Home */}
       {page === 'home' && (
         <main className="home-page">
           <div className="home-copy">
@@ -715,14 +637,14 @@ function App() {
         </main>
       )}
 
-      {/* ABOUT */}
+      {/* About */}
       {page === 'about' && (
         <main className="about-page">
           <p>where the flower blooms</p>
         </main>
       )}
 
-      {/* DIARY DATE PICKER */}
+      {/* Diary */}
       {page === 'diary' && (
         <main className="diary-page">
           <section
@@ -730,8 +652,6 @@ function App() {
             aria-label="Choose a date"
           >
             <div className="date-columns">
-
-              {/* Year */}
               <DateWheel
                 label="Year"
                 value={year}
@@ -739,7 +659,6 @@ function App() {
                 onChange={changeYear}
               />
 
-              {/* Month and star */}
               <div className="month-column">
                 <button
                   className="star-button"
@@ -763,7 +682,6 @@ function App() {
                 />
               </div>
 
-              {/* Day */}
               <DateWheel
                 label="Day"
                 value={day}
@@ -771,16 +689,14 @@ function App() {
                 onChange={setDay}
                 pad
               />
-
             </div>
           </section>
         </main>
       )}
 
-      {/* PHOTO GALLERY */}
+      {/* Gallery */}
       {page === 'gallery' && (
         <main className="gallery-page">
-
           <div className="gallery-heading">
             <button
               className="back-link"
@@ -795,12 +711,8 @@ function App() {
             <span>{selectedDate.replaceAll('-', ' ')}</span>
           </div>
 
-          {/* Only the administrator sees this form. */}
           {isAdmin && (
-            <form
-              className="upload-form"
-              onSubmit={uploadPhoto}
-            >
+            <form className="upload-form" onSubmit={uploadPhoto}>
               <label className="file-label">
                 <span>
                   {uploadFile
@@ -812,9 +724,7 @@ function App() {
                   type="file"
                   accept="image/*"
                   onChange={(event) =>
-                    setUploadFile(
-                      event.target.files?.[0] || null
-                    )
+                    setUploadFile(event.target.files?.[0] || null)
                   }
                 />
               </label>
@@ -853,20 +763,12 @@ function App() {
           )}
 
           {!busy && galleryItems.length === 0 && (
-            <p className="subtle-message">
-              nothing here yet
-            </p>
+            <p className="subtle-message">nothing here yet</p>
           )}
 
-          <section
-            className="photo-gallery"
-            aria-label="Photos"
-          >
+          <section className="photo-gallery" aria-label="Photos">
             {galleryItems.map((item, index) => (
-              <article
-                className="photo-item"
-                key={item.id}
-              >
+              <article className="photo-item" key={item.id}>
                 <button
                   className="photo-open"
                   type="button"
@@ -881,9 +783,7 @@ function App() {
                 </button>
 
                 {item.title && (
-                  <p className="photo-title">
-                    {item.title}
-                  </p>
+                  <p className="photo-title">{item.title}</p>
                 )}
 
                 {isAdmin && (
@@ -897,16 +797,13 @@ function App() {
 
                       if (!confirmed || !supabase) return;
 
-                      const { error: deleteError } =
-                        await supabase
-                          .from('diary_posts')
-                          .delete()
-                          .eq('id', item.post.id);
+                      const { error: deleteError } = await supabase
+                        .from('diary_posts')
+                        .delete()
+                        .eq('id', item.post.id);
 
                       if (deleteError) {
-                        setError(
-                          getErrorMessage(deleteError)
-                        );
+                        setError(getErrorMessage(deleteError));
                       } else {
                         setLightboxIndex(null);
                         await loadPosts();
@@ -920,7 +817,6 @@ function App() {
             ))}
           </section>
 
-          {/* Full-screen photo viewer */}
           {lightboxIndex !== null &&
             galleryItems[lightboxIndex] && (
               <div
@@ -943,7 +839,6 @@ function App() {
                   ×
                 </button>
 
-                {/* Previous photo */}
                 {galleryItems.length > 1 && (
                   <button
                     className="lightbox-arrow lightbox-prev"
@@ -961,7 +856,6 @@ function App() {
                   </button>
                 )}
 
-                {/* Tap the image itself to go forward */}
                 <button
                   className="lightbox-image-button"
                   type="button"
@@ -988,7 +882,6 @@ function App() {
                   />
                 </button>
 
-                {/* Next photo */}
                 {galleryItems.length > 1 && (
                   <button
                     className="lightbox-arrow lightbox-next"
