@@ -52,7 +52,7 @@ input:focus-visible {
 
 
 /* ========================================
-   2. Top navigation
+   2. Navigation
 ======================================== */
 
 .site-header {
@@ -90,12 +90,13 @@ input:focus-visible {
 
 
 /* ========================================
-   3. Home page
+   3. Home
 ======================================== */
 
 .home-page,
 .about-page {
   display: grid;
+
   min-height: 100vh;
   min-height: 100svh;
 
@@ -149,116 +150,14 @@ input:focus-visible {
 }
 
 /*
-  Year and day start lower than the star.
-  This aligns all three number wheels horizontally.
+  Year and day are moved down by the star's height.
+  The month wheel starts immediately below the star.
+  This aligns all three numbers horizontally.
 */
 
-.wheel-wrap {
-  display: block;
-  flex: 0 1 auto;
-  min-width: 0;
-
+.date-columns > .wheel-wrap {
   margin-top: 27px;
 }
-
-
-/* ========================================
-   5. iPhone-style scrolling date wheel
-======================================== */
-
-/*
-  Each wheel displays three rows:
-  previous number / selected number / next number.
-
-  The user can swipe vertically.
-  The selected number settles in the middle.
-*/
-
-.date-wheel {
-  display: flex;
-  flex-direction: column;
-
-  width: clamp(82px, 15vw, 150px);
-  height: 144px;
-
-  overflow-x: hidden;
-  overflow-y: auto;
-
-  border: 0;
-  border-radius: 0;
-  outline: none;
-
-  background: #fff;
-
-  overscroll-behavior-y: contain;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: auto;
-
-  -webkit-overflow-scrolling: touch;
-  -webkit-appearance: none;
-
-  touch-action: pan-y;
-  scrollbar-width: none;
-}
-
-.date-wheel::-webkit-scrollbar {
-  display: none;
-}
-
-/*
-  One empty row above and below the list
-  lets the first and last values reach the center.
-*/
-
-.wheel-spacer {
-  display: block;
-  flex: 0 0 48px;
-  width: 100%;
-  height: 48px;
-  pointer-events: none;
-}
-
-.date-wheel-item {
-  display: flex;
-  flex: 0 0 48px;
-  align-items: center;
-  justify-content: center;
-
-  width: 100%;
-  height: 48px;
-  min-height: 48px;
-
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-
-  background: #fff;
-  color: #c9c9c9;
-
-  font-size: clamp(22px, 4.4vw, 42px);
-  font-weight: 400;
-  letter-spacing: -0.055em;
-  line-height: 1;
-
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.date-wheel-item.is-selected {
-  color: #111;
-}
-
-.date-wheel-item:focus {
-  outline: none;
-}
-
-/*
-  Month and star.
-*/
 
 .month-column {
   display: flex;
@@ -267,6 +166,10 @@ input:focus-visible {
 
   flex: 0 1 auto;
   min-width: 0;
+}
+
+.month-column > .wheel-wrap {
+  margin-top: 0;
 }
 
 .star-button {
@@ -296,6 +199,105 @@ input:focus-visible {
 
 
 /* ========================================
+   5. Single-number scrolling wheel
+======================================== */
+
+.wheel-wrap {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/*
+  Only one row is visible.
+  The other values remain scrollable inside the container.
+
+  Do not add vertical padding here:
+  it would reveal part of the adjacent numbers.
+*/
+
+.date-wheel {
+  display: flex;
+  flex-direction: column;
+
+  width: clamp(82px, 15vw, 150px);
+  height: 48px;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  padding: 0;
+  margin: 0;
+
+  border: 0;
+  border-radius: 0;
+  outline: none;
+
+  background: #fff;
+
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: auto;
+
+  -webkit-overflow-scrolling: touch;
+  -webkit-appearance: none;
+
+  touch-action: pan-y;
+  scrollbar-width: none;
+}
+
+.date-wheel::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+  Every number occupies exactly 48px.
+  Because the viewport is also 48px tall,
+  only one number appears at a time.
+*/
+
+.date-wheel-item {
+  display: flex;
+  flex: 0 0 48px;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+
+  padding: 0;
+  margin: 0;
+
+  border: 0;
+  border-radius: 0;
+
+  background: #fff;
+  color: #c9c9c9;
+
+  font-size: clamp(22px, 4.4vw, 42px);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 48px;
+
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.date-wheel-item.is-selected {
+  color: #111;
+}
+
+.date-wheel-item:focus {
+  outline: none;
+}
+
+
+/* ========================================
    6. Photo gallery
 ======================================== */
 
@@ -310,7 +312,6 @@ input:focus-visible {
   justify-content: space-between;
 
   margin-bottom: 24px;
-
   font-size: 12px;
 }
 
@@ -330,9 +331,10 @@ input:focus-visible {
 
 .photo-open {
   display: block;
-  width: 100%;
 
+  width: 100%;
   padding: 0;
+
   border: 0;
   border-radius: 0;
 
@@ -585,6 +587,7 @@ input:focus-visible {
   padding: 20px;
 
   background: rgba(255, 255, 255, 0.78);
+
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
 }
@@ -700,7 +703,7 @@ input:focus-visible {
 
 
 /* ========================================
-   11. Tablet layout
+   11. Tablet
 ======================================== */
 
 @media (max-width: 900px) {
@@ -724,11 +727,6 @@ input:focus-visible {
     font-size: 12px;
   }
 
-  /*
-    The three wheels share the same horizontal baseline.
-    The star stays above the month only.
-  */
-
   .date-picker {
     padding-right: 8px;
     padding-left: 8px;
@@ -739,15 +737,30 @@ input:focus-visible {
     align-items: flex-start;
   }
 
-  .wheel-wrap {
+  /*
+    These two wheels are lowered to match
+    the month number below the star.
+  */
+
+  .date-columns > .wheel-wrap {
     margin-top: 27px;
+  }
+
+  .month-column {
+    margin-top: 0;
+  }
+
+  .month-column > .wheel-wrap {
+    margin-top: 0;
   }
 
   .date-wheel {
     width: clamp(78px, 25vw, 105px);
-    height: 144px;
+    height: 48px;
 
+    overflow-x: hidden;
     overflow-y: scroll;
+
     -webkit-overflow-scrolling: touch;
 
     scroll-snap-type: y mandatory;
@@ -760,10 +773,7 @@ input:focus-visible {
     min-height: 48px;
 
     font-size: clamp(23px, 7vw, 34px);
-  }
-
-  .month-column {
-    margin-top: 0;
+    line-height: 48px;
   }
 
   .star-button {
@@ -773,7 +783,7 @@ input:focus-visible {
     font-size: 19px;
   }
 
-  /* Gallery: always two columns on mobile. */
+  /* Gallery: two columns on phones. */
 
   .gallery-page {
     padding: 72px 10px 22px;
@@ -814,11 +824,10 @@ input:focus-visible {
     flex-basis: 100%;
   }
 
-  /* Full-screen mobile photo viewer. */
+  /* Mobile full-screen photo viewer. */
 
   .lightbox {
     grid-template-columns: 34px minmax(0, 1fr) 34px;
-
     padding: 42px 6px 18px;
   }
 
