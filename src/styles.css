@@ -1,2006 +1,419 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Patrick+Hand&display=swap');
-
-@font-face {
-  font-family: 'Jewsworld';
-  src: url('/jewsworld/fonts/Jewsworld-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-
-/* ========================================
-   2. Global Settings
-======================================== */
-
-:root {
-  --ink: #183f35;
-  --muted: #718178;
-  --line: #dce4d8;
-  --paper: #fffdf5;
-  --accent: #a8c86b;
-  --soft: #f4eed9;
-
-  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-  color: var(--ink);
-  background: var(--soft);
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-}
-
 * {
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  background: var(--soft);
+:root {
+  font-family: Helvetica, Inter, Arial, sans-serif;
+  color: #111;
+  background: #fff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-button,
-input,
-textarea,
-select {
+html, body, #root {
+  min-height: 100%;
+  margin: 0;
+  background: #fff;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button, input, select {
   font: inherit;
 }
 
 button {
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.app-shell {
-  min-height: 100vh;
-  background: var(--soft);
-}
-
-
-/* ========================================
-   3. Shared Typography
-======================================== */
-
-.brand,
-.welcome-brand,
-.calendar-head h2,
-.section-heading h2,
-.intro h1,
-.post-card h3,
-.empty-state h3,
-.note-memory h3,
-.photo-caption,
-.note-detail h2,
-.section-heading .eyebrow,
-.footer,
-.welcome-content > p,
-.day-cell,
-.primary-button,
-.outline-button,
-.icon-button,
-.text-button,
-.back-calendar {
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-}
-
-/* Login page heading: keep the main title readable */
-.welcome-content > h1 {
-  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-}
-
-.welcome-content > h1 em {
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-style: normal;
-  color: #174d40;
-}
-
-/* Keep long diary content easy to read */
-.post-body,
-.note-preview,
-.note-detail-body,
-.comment-content p,
-.composer input,
-.composer textarea,
-.auth-modal input,
-.comment-form input {
-  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-}
-
-
-/* ========================================
-   4. Top Navigation
-======================================== */
-
-.topbar {
-  height: 82px;
-  padding: 0 max(24px, calc((100vw - 1060px) / 2));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  border-bottom: 1px solid var(--line);
-  background: rgba(244, 238, 217, 0.92);
-  backdrop-filter: blur(12px);
-
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-
-  color: var(--ink);
-  text-decoration: none;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-
-.brand small {
-  display: block;
-  margin-top: 3px;
-
-  color: var(--muted);
-  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-}
-
-.brand-mark {
-  width: 39px;
-  height: 39px;
-  display: grid;
-  place-items: center;
-
-  border-radius: 50%;
-  background: #174d40;
-  color: var(--soft);
-}
-
-.topbar nav {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.user-pill {
-  padding: 8px 12px;
-  border-radius: 99px;
-
-  background: #f5eee5;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-
-/* ========================================
-   5. Main Layout and Intro
-======================================== */
-
-.main-layout {
-  width: min(100% - 40px, 900px);
-  margin: 0 auto;
-}
-
-.intro {
-  padding: 38px 12px 35px;
-  text-align: center;
-}
-
-.eyebrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-
-  color: #a18c78;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-}
-
-.intro h1 {
-  margin: 16px 0 11px;
-
-  color: #174d40;
-  font-size: clamp(42px, 7vw, 66px);
-  font-weight: 500;
-  line-height: 0.98;
-  letter-spacing: 0.03em;
-}
-
-.intro p {
-  margin: 0;
-
-  color: #587365;
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-
-/* ========================================
-   6. Cards
-======================================== */
-
-.calendar-card,
-.card,
-.post-card {
-  border: 1px solid var(--line);
-  border-radius: 22px;
-
-  background: var(--paper);
-  box-shadow: 0 8px 24px #174d400a;
-}
-
-.calendar-card {
-  padding: clamp(18px, 4vw, 32px);
-}
-
-.calendar-head,
-.section-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.calendar-head .eyebrow,
-.section-heading .eyebrow {
-  justify-content: flex-start;
-}
-
-.calendar-head h2,
-.section-heading h2 {
-  margin: 7px 0 0;
-  font-size: clamp(26px, 4vw, 36px);
-  font-weight: 500;
-}
-
-.section-heading h2 {
-  font-size: 21px;
-}
-
-
-/* ========================================
-   7. Buttons
-======================================== */
-
-.icon-button,
-.outline-button,
-.primary-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-
-  border-radius: 14px;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-}
-
-.icon-button {
-  width: 37px;
-  height: 37px;
-
-  border: 1px solid #d3ddce;
-  background: transparent;
-  color: #174d40;
-}
-
-.icon-button:hover,
-.outline-button:hover {
-  background: #e9efd9;
-}
-
-.outline-button {
-  padding: 10px 14px;
-
-  border: 1px solid #d3ddce;
-  background: var(--paper);
-  color: #174d40;
-  font-size: 13px;
-}
-
-.primary-button {
-  padding: 12px 17px;
-
-  border: 1px solid #174d40;
-  border-radius: 14px;
-
-  background: #174d40;
-  color: var(--paper);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.primary-button:hover {
-  background: #0F3C65;
-}
-
-.primary-button.compact {
-  padding: 10px 13px;
-}
-
-.text-button {
-  padding: 5px;
-
-  border: 0;
-  background: transparent;
-  color: #174d40;
-  font-size: 12px;
-}
-
-.text-button:hover {
-  text-decoration: underline;
-}
-
-.back-calendar {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  padding: 0 0 10px;
-  margin-top: -10px;
-
-  border: 0;
-  background: transparent;
-  color: #174d40;
-  font-weight: 600;
-}
-
-
-/* ========================================
-   8. Calendar
-======================================== */
-
-.month-nav {
-  display: flex;
-  gap: 8px;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 7px;
-}
-
-.weekday-row {
-  margin-top: 28px;
-  margin-bottom: 8px;
-}
-
-.weekday-row span {
-  padding: 8px;
-
-  color: #a79b8e;
-  font-size: 11px;
-  text-align: center;
-}
-
-.day-cell {
-  position: relative;
-
-  min-height: 55px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-
-  border: 1px solid transparent;
-  border-radius: 16px;
-
-  background: var(--paper);
-  color: var(--ink);
-  font-size: 13px;
-}
-
-.day-cell:hover {
-  background: #e9efd9;
-}
-
-.day-cell.outside {
-  color: #cfc5ba;
-}
-
-.day-cell.selected {
-  border-color: #174d40;
-  background: #174d40;
-  color: var(--paper);
-  font-weight: 700;
-}
-
-.day-cell.today {
-  outline: 2px solid #a8c86b;
-  outline-offset: -3px;
-}
-
-.day-cell.today span {
-  border-radius: 2px;
-}
-
-.day-cell i,
-.legend-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #b7cf71;
-}
-
-.calendar-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  margin-top: 17px;
-  padding-top: 14px;
-
-  border-top: 1px solid #f0e9e0;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.calendar-foot span {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-
-/* ========================================
-   9. Date Selectors
-======================================== */
-
-.date-selectors {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.date-select {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.date-select select {
-  min-width: 88px;
-  padding: 9px 10px;
-
-  border: 1px solid var(--line);
-  border-radius: 10px;
-
-  background: var(--paper);
-  color: var(--ink);
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: 12px;
-}
-
-.date-select select:focus {
-  outline: 2px solid #d7c6b5;
-  outline-offset: 1px;
-}
-
-
-/* ========================================
-   10. Entries Section and Empty State
-======================================== */
-
-.entries-section {
-  margin-top: 43px;
-  padding-top: 22px;
-}
-
-.section-heading {
-  margin-bottom: 21px;
-}
-
-.empty-state {
-  padding: 48px 20px;
-
-  border: 1px dashed #e2d6c8;
-  border-radius: 18px;
-
-  background: #f3ede5;
-  text-align: center;
-}
-
-.empty-icon {
-  width: 54px;
-  height: 54px;
-  display: grid;
-  place-items: center;
-
-  margin: 0 auto 15px;
-  border-radius: 18px;
-
-  background: #e9dfd2;
-  color: #8d7865;
-}
-
-.empty-state h3 {
-  margin: 0 0 8px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.empty-state p {
-  margin: 0 0 18px;
-
-  color: var(--muted);
-  font-size: 12px;
-}
-
-
-/* ========================================
-   11. Diary Composer
-======================================== */
-
-.composer {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  margin-bottom: 20px;
-  padding: 23px;
-}
-
-.composer-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.composer h3 {
-  margin: 0;
-  font-weight: 500;
-}
-
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.composer label,
-.auth-modal label {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-
-  color: #456456;
-  font-size: 12px;
-}
-
-.composer input:not([type='file']),
-.composer textarea,
-.auth-modal input,
-.comment-form input {
-  width: 100%;
-  padding: 12px;
-
-  border: 1px solid var(--line);
-  border-radius: 10px;
-
-  outline: none;
-  background: #fffefa;
-  color: var(--ink);
-}
-
-.composer input:focus,
-.composer textarea:focus,
-.auth-modal input:focus,
-.comment-form input:focus {
-  border-color: #b7a18a;
-}
-
-.composer textarea {
-  resize: vertical;
-  line-height: 1.7;
-}
-
-.upload-box {
-  align-items: center;
-  padding: 18px;
-
-  border: 1px dashed #d6c7b7;
-  border-radius: 13px;
-
-  background: #fbf7f1;
-  cursor: pointer;
-}
-
-.upload-box input {
-  max-width: 100%;
-  font-size: 11px;
-}
-
-.upload-box small {
-  color: var(--muted);
-}
-
-
-/* ========================================
-   12. Diary Posts
-======================================== */
-
-.posts-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.post-card {
-  overflow: hidden;
-  padding: 25px;
-}
-
-.post-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  color: #a09588;
-  font-size: 11px;
-}
-
-.danger-text {
-  color: #b45f52;
-}
-
-.post-card h3 {
-  margin: 14px 0 8px;
-  font-size: 28px;
-  font-weight: 500;
-}
-
-.post-body {
-  margin: 14px 0 18px;
-
-  font-size: 14px;
-  line-height: 1.95;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-
-/* ========================================
-   13. Photos in Diary Posts
-======================================== */
-
-.photo-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 9px;
-
-  margin: 18px 0;
-}
-
-.photo-grid figure {
-  overflow: hidden;
-  margin: 0;
-  border-radius: 13px;
-  background: #f0e9df;
-}
-
-.photo-grid img {
-  display: block;
-  width: 100%;
-  height: 260px;
-  object-fit: cover;
-}
-
-.photo-grid.single-photo {
-  grid-template-columns: 1fr;
-}
-
-.photo-grid.single-photo img {
-  height: auto;
-  max-height: 520px;
-  object-fit: contain;
-}
-
-.photo-grid figcaption {
-  padding: 8px 10px;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-
-/* ========================================
-   14. Comments
-======================================== */
-
-.comments-block {
-  margin-top: 22px;
-  padding-top: 17px;
-  border-top: 1px solid #eee6dc;
-}
-
-.comments-block h4 {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-
-  margin: 0 0 14px;
-
-  color: #76695d;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.comment {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin: 13px 0;
-}
-
-.avatar {
-  flex: 0 0 29px;
-  height: 29px;
-  display: grid;
-  place-items: center;
-
-  border-radius: 50%;
-  background: #eee4d8;
-  color: #806a57;
-  font-size: 12px;
-}
-
-.comment-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.comment-author {
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.comment-author time {
-  margin-left: 8px;
-  color: #aaa095;
-  font-weight: 400;
-}
-
-.comment-content p {
-  margin: 4px 0 0;
-
-  font-size: 12px;
-  line-height: 1.7;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.tiny {
-  width: 25px;
-  height: 25px;
-  border: 0;
-}
-
-.comment-form {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.comment-form input {
-  background: #faf6f0;
-  font-size: 12px;
-}
-
-.send-button {
-  width: 39px;
-  flex: 0 0 39px;
-  display: grid;
-  place-items: center;
-
-  border: 0;
-  border-radius: 10px;
-
-  background: #174d40;
-  color: white;
-}
-
-.comment-login {
-  margin-top: 4px;
-  padding: 10px 13px;
-
-  border: 1px solid var(--line);
-  border-radius: 10px;
-
-  background: #faf6f0;
-  color: #174d40;
-  font-size: 12px;
-}
-
-
-/* ========================================
-   15. Footer and Messages
-======================================== */
-
-.footer {
-  padding: 45px 0 32px;
-
-  color: #a69a8c;
-  font-size: 11px;
-  text-align: center;
-}
-
-.footer span {
-  color: #b8877a;
-}
-
-.muted {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.error-banner,
-.notice {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  margin-bottom: 15px;
-  padding: 11px 13px;
-
-  border-radius: 10px;
-  background: #fbefeb;
-  color: #9a5145;
-  font-size: 12px;
-}
-
-.error-banner button {
-  border: 0;
-  background: none;
   color: inherit;
-}
-
-
-/* ========================================
-   16. Modal and Authentication
-======================================== */
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-
-  display: grid;
-  place-items: center;
-
-  padding: 20px;
-  background: #352b2380;
-}
-
-.modal {
-  position: relative;
-  width: min(100%, 430px);
-  padding: 32px;
-
-  border-radius: 22px;
-  background: var(--paper);
-  box-shadow: 0 20px 80px #0002;
-}
-
-.auth-modal .eyebrow {
-  justify-content: flex-start;
-}
-
-.auth-modal h2 {
-  margin: 12px 0 8px;
-  font-size: 25px;
-  font-weight: 500;
-}
-
-.auth-modal .muted {
-  margin: 0 0 21px;
-}
-
-.close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-}
-
-.auth-modal .primary-button {
-  width: 100%;
-  margin-top: 4px;
-}
-
-.auth-modal .text-button {
-  display: block;
-  margin: 12px auto 0;
-}
-
-
-/* ========================================
-   17. Setup Screen
-======================================== */
-
-.setup-screen {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-
-  padding: 24px;
-  background: radial-gradient(circle at top, #fffdf8, #f3ebe0);
-}
-
-.setup-card {
-  width: min(100%, 520px);
-  padding: 48px 32px;
-
-  border: 1px solid var(--line);
-  border-radius: 24px;
-
-  background: #fffdf9;
-  box-shadow: 0 16px 50px #66503b0c;
-  text-align: center;
-}
-
-.setup-card .brand-mark {
-  width: 54px;
-  height: 54px;
-  margin: 0 auto 23px;
-}
-
-.setup-card .eyebrow {
-  font-size: 9px;
-}
-
-.setup-card h1 {
-  margin: 14px 0 8px;
-  font-size: 38px;
-  font-weight: 500;
-}
-
-.setup-card > p {
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.setup-note {
-  margin-top: 24px;
-  padding: 16px;
-
-  border-radius: 12px;
-  background: #f5eee5;
-  color: #776a5e;
-  font-size: 12px;
-  line-height: 1.9;
-  text-align: left;
-}
-
-.setup-note code {
-  padding: 2px 5px;
-  border-radius: 4px;
-  background: #e9dfd3;
-  font-size: 11px;
-}
-
-
-/* ========================================
-   18. Welcome / Login Screen
-======================================== */
-
-.welcome-screen {
-  position: relative;
-
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-
-  padding: 28px clamp(20px, 6vw, 76px);
-  overflow: hidden;
-
-  background: #f4eed9;
-  color: #174d40;
-}
-
-.welcome-screen::before {
-  content: '';
-  position: absolute;
-  top: 20%;
-  right: -100px;
-
-  width: 320px;
-  height: 320px;
-
-  border-radius: 48% 52% 61% 39%;
-  background: #e4d9f5;
-  opacity: 0.75;
-  transform: rotate(24deg);
-}
-
-.welcome-screen::after {
-  content: '';
-  position: absolute;
-  bottom: 8%;
-  left: -70px;
-
-  width: 180px;
-  height: 180px;
-
-  border-radius: 50%;
-  background: #e7edc9;
-  opacity: 0.8;
-}
-
-.welcome-brand {
-  position: relative;
-  z-index: 1;
-
-  font-size: 24px;
-  letter-spacing: 0.02em;
-}
-
-.welcome-brand span {
-  color: #d95670;
-}
-
-.welcome-content {
-  position: relative;
-  z-index: 1;
-
-  width: min(100%, 480px);
-  margin: auto;
-  padding: 40px 0;
-}
-
-.welcome-kicker {
-  color: #718178;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  font-family: "Jewsworld", sans-serif;
-}
-
-.welcome-content > h1 {
-  margin: 18px 0;
-
-  font-size: clamp(44px, 8vw, 76px);
-  font-weight: 600;
-  line-height: 0.92;
-  letter-spacing: -0.04em;
-  font-family: "Jewsworld", sans-serif;
-}
-
-.welcome-content > h1 em {
-  display: inline-block;
-}
-
-.welcome-content > p {
-  margin-bottom: 26px;
-  color: #587365;
-  line-height: 1.8;
-}
-
-.welcome-content .modal-backdrop {
-  position: static;
-  padding: 0;
-  background: transparent;
-  backdrop-filter: none;
-}
-
-.welcome-content .auth-modal {
-  width: 100%;
-  padding: 26px;
-
-  border: 1px solid #e1e5d5;
-  border-radius: 24px;
-
-  background: #fffdf5;
-  box-shadow: 0 14px 40px #174d4010;
-}
-
-.welcome-content .auth-modal .close {
-  display: none;
-}
-
-.welcome-content .auth-modal h2 {
-  font-family: 'Jewsworld', 'Noto Sans TC', sans-serif;
-  font-size: 32px;
-}
-
-.welcome-content .auth-modal .eyebrow {
-  justify-content: flex-start;
-  color: #718178;
-}
-
-.welcome-content .auth-modal label {
-  color: #456456;
-}
-
-.welcome-content .auth-modal input {
-  border-color: #dce4d8;
-  border-radius: 13px;
-  background: #fffefb;
-}
-
-.welcome-content .text-button {
-  color: #174d40;
-}
-
-.welcome-foot {
-  position: relative;
-  z-index: 1;
-
-  padding: 18px 0 4px;
-
-  color: #718178;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-align: center;
-}
-
-
-/* ========================================
-   19. Day Page Animation
-======================================== */
-
-.day-view {
-  animation: fade-in 0.22s ease-out;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-
-/* ========================================
-   20. Day Page Composer Modes
-======================================== */
-
-.composer-mode {
-  display: flex;
-  gap: 8px;
-  margin: 0 0 16px;
-}
-
-.composer-mode button {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-
-  padding: 9px 13px;
-
-  border: 1px solid var(--line);
-  border-radius: 12px;
-
-  background: var(--paper);
-  color: #587365;
-  font-size: 12px;
-}
-
-.composer-mode button.mode-active {
-  border-color: #174d40;
-  background: #174d40;
-  color: var(--paper);
-}
-
-
-/* ========================================
-   21. Memory Gallery
-======================================== */
-
-.memory-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: start;
-  gap: 14px;
-
-  margin-top: 18px;
-}
-
-.memory-card {
-  min-width: 0;
-  overflow: hidden;
-
-  border: 1px solid var(--line);
-  border-radius: 15px;
-
-  background: var(--paper);
-  box-shadow: 0 5px 16px #174d4008;
-}
-
-.note-memory {
-  min-height: 220px;
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
-}
-
-.memory-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 5px;
-}
-
-.memory-kind {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-
-  color: #718178;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-}
-
-.memory-card .danger-text {
-  padding: 0;
-  font-size: 10px;
-}
-
-.note-memory h3 {
-  margin: 13px 0 8px;
-
-  font-size: clamp(16px, 2vw, 21px);
-  line-height: 1.15;
-  overflow-wrap: anywhere;
-}
-
-.note-preview {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 6;
-
-  margin: 0 0 12px;
-
-  color: #587365;
-  font-size: 11px;
-  line-height: 1.75;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.read-note {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  gap: 4px;
-
-  margin-top: auto;
-  padding: 4px 0;
-
-  border: 0;
-  background: transparent;
-  color: #174d40;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.memory-comments {
-  margin-top: 12px;
-}
-
-.memory-comments .comments-block {
-  margin-top: 10px;
-  padding-top: 10px;
-}
-
-.memory-comments .comments-block h4 {
-  font-size: 10px;
-}
-
-.memory-comments .comment {
-  gap: 6px;
-}
-
-.memory-comments .avatar {
-  flex-basis: 22px;
-  height: 22px;
-  font-size: 10px;
-}
-
-.memory-comments .comment-author {
-  font-size: 9px;
-}
-
-.memory-comments .comment-author time {
-  display: block;
-  margin: 2px 0 0;
-}
-
-.memory-comments .comment-content p {
-  font-size: 10px;
-}
-
-.memory-comments .comment-form {
-  gap: 4px;
-}
-
-.memory-comments .comment-form input {
-  min-width: 0;
-  padding: 8px;
-  font-size: 10px;
-}
-
-.memory-comments .send-button {
-  width: 28px;
-  flex-basis: 28px;
-}
-
-
-/* ========================================
-   22. Photo Memory Cards
-======================================== */
-
-.photo-memory {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.memory-photo-wrap {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border-radius: 10px;
-  background: #eee9dc;
-}
-
-.memory-photo-button {
-  display: block;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: zoom-in;
-}
-
-.memory-photo-button img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  transition: opacity 0.2s ease;
-}
-
-.memory-photo-button:hover img {
-  opacity: 0.92;
-}
-
-.memory-photo-button:focus-visible {
-  outline: 2px solid #174d40;
-  outline-offset: 3px;
-}
-
-.photo-date {
-  position: absolute;
-  bottom: 7px;
-  left: 7px;
-  padding: 4px 6px;
-  border-radius: 7px;
-  background: #fffdf0e8;
-  color: #174d40;
-  font-size: 9px;
-}
-
-.photo-caption {
-  margin: 9px 10px 11px;
-  font-size: 15px;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
-}
-
-.photo-delete {
-  align-self: flex-start;
-  margin: 0 10px 10px;
-}
-
-/* ========================================
-   23. Note Detail
-======================================== */
-
-.note-detail h2 {
-  margin: 14px 0;
-  font-size: 30px;
-}
-
-.note-detail-body {
-  max-height: 55vh;
-  overflow: auto;
-
-  color: #456456;
-  font-size: 14px;
-  line-height: 1.95;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.note-detail small {
-  color: #718178;
-}
-
-
-/* ========================================
-   24. Responsive: Tablet and Mobile
-======================================== */
-
-@media (max-width: 680px) {
-  .memory-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  .note-memory {
-    min-height: 190px;
-    padding: 9px;
-  }
-
-  .note-preview {
-    -webkit-line-clamp: 5;
-  }
-
-  .memory-comments .comment-form input {
-    font-size: 9px;
-  }
-
-  .photo-caption {
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 640px) {
-  .topbar {
-    height: 70px;
-    padding: 0 16px;
-  }
-
-  .main-layout {
-    width: calc(100% - 24px);
-  }
-
-  .intro {
-    padding: 40px 5px 27px;
-  }
-
-  .intro p {
-    font-size: 12px;
-  }
-
-  .calendar-card {
-    padding: 20px 15px;
-    border-radius: 16px;
-  }
-
-  .calendar-head {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .calendar-head h2 {
-    font-size: 20px;
-  }
-
-  .date-selectors {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 5px;
-  }
-
-  .date-select select {
-    min-width: 74px;
-    padding: 8px 6px;
-  }
-
-  .calendar-grid {
-    gap: 4px;
-  }
-
-  .day-cell {
-    min-height: 48px;
-    border-radius: 12px;
-  }
-
-  .weekday-row {
-    margin-top: 21px;
-  }
-
-  .weekday-row span {
-    padding: 6px;
-    font-size: 10px;
-  }
-
-  .section-heading {
-    align-items: flex-end;
-  }
-
-  .section-heading h2 {
-    font-size: 17px;
-  }
-
-  .section-heading .eyebrow {
-    font-size: 9px;
-  }
-
-  .post-card {
-    padding: 18px;
-  }
-
-  .photo-grid img {
-    height: 180px;
-  }
-
-  .photo-grid.single-photo img {
-    height: auto;
-    max-height: 420px;
-  }
-
-  .user-pill {
-    display: none;
-  }
-
-  .brand {
-    font-size: 14px;
-  }
-
-  .brand small {
-    font-size: 10px;
-  }
-
-  .outline-button {
-    padding: 9px 10px;
-    font-size: 11px;
-  }
-
-  .primary-button.compact {
-    padding: 9px 10px;
-    font-size: 11px;
-  }
-
-  .modal {
-    padding: 27px 22px;
-  }
-
-  .welcome-screen {
-    padding: 22px;
-  }
-
-  .welcome-content {
-    padding: 24px 0;
-  }
-}
-
-@media (max-width: 420px) {
-  .memory-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 5px;
-  }
-
-  .note-memory {
-    min-height: 210px;
-    padding: 12px;
-  }
-
-  .note-memory h3 {
-    font-size: 20px;
-  }
-
-  .note-preview {
-    font-size: 11px;
-    -webkit-line-clamp: 6;
-  }
-
-  .memory-comments .comment-author time {
-    display: inline;
-    margin-left: 3px;
-  }
-  .day-view .section-heading .eyebrow {
-    font-size: 14px;
-  }
-  /* Handwriting font for selected headings */
-.brand small,
-.intro .eyebrow,
-.intro p,
-.calendar-head .eyebrow {
-  font-family: "Jewsworld", cursive;
-}
-}
-  
-
-/* Welcome screen — cinematic minimal palette */
-.welcome-screen {
-  background: #FFF2BA;
-  color: #013137;
-}
-
-.welcome-screen::before,
-.welcome-screen::after {
-  display: none;
-}
-
-.welcome-brand {
-  color: #013137;
-  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-  font-size: 30px;
-  letter-spacing: 0.02em;
-}
-
-.welcome-brand span {
-  color: #0F3C65;
-}
-
-.welcome-content {
-  width: min(100%, 760px);
-  padding: 28px 0;
-  text-align: left;
-  margin: auto 0;
-}
-
-.welcome-kicker {
-  color: #0F3C65;
-  font-size: clamp(15px, 2vw, 19px);
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-}
-
-.welcome-content > h1 {
-  margin: 24px 0 18px;
-  color: #013137;
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(58px, 10vw, 104px);
-  font-weight: 600;
-  line-height: 0.94;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-}
-
-.welcome-content > h1 em {
-  color: #013137;
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-style: normal;
-}
-
-.welcome-content > .welcome-tagline {
-  margin: 0 0 25px;
-  color: #0F3C65;
-  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-  font-size: clamp(16px, 2vw, 20px);
-  line-height: 1.6;
-}
-
-.welcome-content .auth-modal {
-  padding: 22px 24px;
-  border-color: #013137;
-  border-radius: 16px;
-  background: #fff9dc;
-  box-shadow: 0 10px 30px #01313712;
-  text-align: left;
-}
-
-.welcome-content .auth-modal > .eyebrow,
-.welcome-content .auth-modal > h2,
-.welcome-content .auth-modal > p.muted {
-  display: none;
-}
-
-.welcome-content .auth-modal .stack {
-  gap: 10px;
-}
-
-.welcome-content .auth-modal label {
-  gap: 4px;
-  color: #718178;
-  font-size: 11px;
-}
-
-.welcome-content .auth-modal input {
-  padding: 11px 12px;
-  border-color: #b8c9c6;
-  border-radius: 8px;
-  background: #fffdf1;
-}
-
-.welcome-content .auth-modal input:focus {
-  border-color: #0F3C65;
-  outline: 2px solid #0F3C6533;
-}
-
-.welcome-content .auth-modal .primary-button {
-  margin-top: 3px;
-  border-color: #013137;
-  background: #013137;
-  color: #FFF2BA;
-}
-
-.welcome-content .auth-modal .primary-button:hover {
-  background: #0F3C65;
-}
-
-.welcome-content .auth-modal .text-button {
-  margin-top: 9px;
-  color: #013137;
-}
-
-.welcome-foot {
-  position: absolute;
-  right: clamp(20px, 6vw, 76px);
-  bottom: 24px;
-  z-index: 2;
-  padding: 0;
-  color: #0F3C65;
-  font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-align: right;
-  text-transform: uppercase;
-}
-
-@media (max-width: 640px) {
-  .welcome-brand {
-    font-size: 26px;
-  }
-
-  .welcome-content {
-    padding: 22px 0 52px;
-  }
-
-  .welcome-content > h1 {
-    font-size: clamp(48px, 12vw, 76px);
-    line-height: 0.98;
-  }
-
-  .welcome-foot {
-    right: 20px;
-    bottom: 18px;
-    font-size: 10px;
-  }
-
-  .welcome-content > .welcome-tagline {
-    font-size: 20px;
-  }
-
-  .welcome-content .auth-modal {
-    padding: 18px;
-  }
-
-  .welcome-kicker {
-    font-size: 18px;
-  }
-}
-
-/* ========================================
-   FULL PHOTO VIEWER
-======================================== */
-
-.photo-viewer-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(30, 35, 31, 0.76);
-  backdrop-filter: blur(3px);
-  animation: photo-viewer-fade-in 180ms ease;
-}
-
-.photo-viewer {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: auto;
-  max-width: 88vw;
-  max-height: 85vh;
-}
-
-.photo-viewer-image {
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: 88vw;
-  max-height: 82vh;
-  object-fit: contain;
-  border-radius: 5px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
-}
-
-.photo-viewer-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255, 253, 245, 0.92);
-  color: #174d40;
   cursor: pointer;
 }
 
-.photo-viewer-close:hover {
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 1px solid #777;
+  outline-offset: 4px;
+}
+
+.site-shell {
+  min-height: 100vh;
   background: #fff;
 }
 
-.photo-viewer-caption {
-  display: none;
+.site-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: clamp(20px, 4vw, 64px);
+  width: 100%;
+  padding: 24px clamp(18px, 3.2vw, 48px);
 }
 
-@keyframes photo-viewer-fade-in {
-  from {
-    opacity: 0;
-  }
+.nav-link, .back-link, .delete-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #111;
+  font-size: 12px;
+  font-weight: 400;
+  text-decoration: none;
+}
 
-  to {
-    opacity: 1;
+.nav-link:hover, .back-link:hover, .delete-link:hover {
+  opacity: .55;
+}
+
+.home-page, .about-page {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  padding: 80px 24px;
+}
+
+.home-copy, .about-page p {
+  text-align: center;
+  font-size: clamp(14px, 1.25vw, 17px);
+  line-height: 1.55;
+  font-weight: 400;
+  letter-spacing: -.025em;
+}
+
+.home-copy p, .about-page p {
+  margin: 0;
+}
+
+.date-picker {
+  display: grid;
+  min-height: 100svh;
+  align-content: center;
+  justify-items: center;
+  padding: 90px 20px 50px;
+}
+
+.date-columns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 3.8vw, 54px);
+}
+
+.wheel-wrap {
+  display: block;
+  min-width: 0;
+}
+
+.date-wheel {
+  width: clamp(88px, 15vw, 160px);
+  border: 0;
+  border-radius: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  color: #111;
+  padding: 12px 0;
+  text-align: center;
+  text-align-last: center;
+  font-size: clamp(22px, 4.4vw, 46px);
+  font-weight: 400;
+  letter-spacing: -.055em;
+  cursor: ns-resize;
+}
+
+.date-wheel option {
+  font-size: 20px;
+  background: #fff;
+  color: #111;
+}
+
+.month-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.star-button {
+  border: 0;
+  padding: 0 8px 3px;
+  background: transparent;
+  font-size: clamp(17px, 2.2vw, 23px);
+  line-height: 1;
+  transition: transform .18s ease;
+}
+
+.star-button:hover {
+  transform: rotate(18deg) scale(1.1);
+}
+
+.date-hint {
+  margin: 20px 0 0;
+  color: #aaa;
+  font-size: 10px;
+  letter-spacing: .08em;
+}
+
+.gallery-page {
+  min-height: 100vh;
+  padding: 80px clamp(12px, 1.3vw, 22px) 28px;
+}
+
+.gallery-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  font-size: 12px;
+}
+
+.upload-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 24px;
+  padding: 12px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.file-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.file-label input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.caption-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 0;
+  font-size: 12px;
+}
+
+.plain-button {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid #111;
+  border-radius: 0;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+}
+
+.plain-button:disabled {
+  opacity: .45;
+  cursor: wait;
+}
+
+.photo-gallery {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(12px, 1.1vw, 18px);
+  align-items: start;
+}
+
+.photo-item {
+  min-width: 0;
+  margin: 0;
+}
+
+.photo-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #f5f5f5;
+}
+
+.photo-title {
+  margin: 7px 0 0;
+  overflow: hidden;
+  color: #111;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.delete-link {
+  margin-top: 7px;
+  color: #777;
+  font-size: 10px;
+}
+
+.subtle-message, .error-message, .config-warning {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.subtle-message {
+  color: #999;
+}
+
+.error-message {
+  color: #a22;
+}
+
+.config-warning {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  max-width: 360px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #ddd;
+}
+
+.modal-shade {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(255 255 255 / 78%);
+  backdrop-filter: blur(5px);
+}
+
+.login-panel {
+  position: relative;
+  width: min(100%, 340px);
+  padding: 34px 28px 28px;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: 0;
+  background: transparent;
+  font-size: 23px;
+  font-weight: 300;
+}
+
+.tiny-label {
+  margin: 0 0 14px;
+  color: #888;
+  font-size: 9px;
+  letter-spacing: .14em;
+}
+
+.login-panel h2 {
+  margin: 0 0 24px;
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.login-form label {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+}
+
+.login-form input {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 0;
+  background: #fff;
+  color: #111;
+  font-size: 13px;
+}
+
+.login-form .plain-button {
+  margin-top: 4px;
+}
+
+.form-message {
+  margin: 14px 0 0;
+  color: #a22;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .photo-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 600px) {
-  .photo-viewer-backdrop {
-    padding: 12px;
+  .site-header {
+    gap: 28px;
+    padding: 20px 18px;
   }
 
-  .photo-viewer {
-    max-width: 94vw;
+  .nav-link {
+    font-size: 12px;
   }
 
-  .photo-viewer-image {
-    max-width: 94vw;
-    max-height: 80vh;
+  .date-columns {
+    gap: 8px;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .photo-viewer-backdrop,
-  .memory-photo-button img,
-  .photo-viewer-close {
-    animation: none;
-    transition: none;
+  .date-wheel {
+    width: clamp(76px, 25vw, 105px);
+    font-size: clamp(23px, 7vw, 34px);
   }
-}
 
-/* ========================================
-   Jewsworld brand consistency overrides
-   ======================================== */
+  .gallery-page {
+    padding: 72px 10px 22px;
+  }
 
-:root {
-  --ink: #013137;
-  --muted: #0F3C65;
-  --line: #0F3C6530;
-  --paper: #FFF2BA;
-  --accent: #0F3C65;
-  --soft: #FFF2BA;
-}
+  .gallery-heading {
+    margin-bottom: 18px;
+    padding: 0 2px;
+  }
 
-html,
-body,
-.app-shell {
-  background: #FFF2BA;
-  color: #013137;
-}
+  .photo-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 10px;
+  }
 
-/* The entire welcome / login experience uses the Jewsworld font */
-.welcome-screen,
-.welcome-screen *,
-.welcome-screen button,
-.welcome-screen input,
-.welcome-screen textarea,
-.welcome-screen select {
-  font-family: 'Jewsworld', sans-serif !important;
-}
+  .photo-item img {
+    aspect-ratio: 3 / 4;
+  }
 
-.welcome-screen {
-  background: #FFF2BA;
-  color: #013137;
-}
+  .photo-title {
+    margin-top: 6px;
+    font-size: 11px;
+  }
 
-.welcome-brand,
-.welcome-content > h1,
-.welcome-content > h1 em,
-.welcome-content > p,
-.welcome-kicker,
-.welcome-foot {
-  color: #013137;
-  font-family: 'Jewsworld', sans-serif !important;
-}
+  .upload-form {
+    flex-wrap: wrap;
+  }
 
-.welcome-brand span,
-.welcome-kicker {
-  color: #0F3C65;
-}
-
-.welcome-content .auth-modal,
-.welcome-content .auth-modal input {
-  background: #FFF2BA;
-  color: #013137;
-  border-color: #0F3C65;
-}
-
-.welcome-content .auth-modal label,
-.welcome-content .auth-modal .text-button {
-  color: #013137;
-}
-
-.welcome-content .auth-modal button,
-.welcome-content .primary-button,
-.welcome-content button[type="submit"] {
-  background: #0F3C65;
-  border-color: #0F3C65;
-  color: #FFF2BA;
-  font-family: 'Jewsworld', sans-serif !important;
-}
-
-.welcome-foot {
-  color: #0F3C65;
-}
-
-/* Carry the same three-color identity into inner pages */
-.topbar {
-  background: #FFF2BA;
-  border-color: #0F3C6530;
-}
-
-.primary-button,
-button.primary-button {
-  background: #013137;
-  border-color: #013137;
-  color: #FFF2BA;
-}
-
-.outline-button,
-.icon-button {
-  border-color: #0F3C65;
-  color: #013137;
-}
-
-.outline-button:hover,
-.icon-button:hover {
-  background: #0F3C65;
-  color: #FFF2BA;
-}
-
-.post-card,
-.note-memory,
-.note-detail,
-.auth-modal,
-.composer,
-.empty-state {
-  border-color: #0F3C6530;
-}
-
-::selection {
-  background: #0F3C65;
-  color: #FFF2BA;
+  .caption-input {
+    flex-basis: 100%;
+    order: 3;
+  }
 }
