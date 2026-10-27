@@ -467,8 +467,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
     const activeTrip = trips.find((trip) => trip.id === selectedTrip.id) || selectedTrip;
     return (
       <main className="trip-detail-page">
-        <button className="trip-back" onClick={() => { setSelectedTrip(null); setTripLightbox(null); }}>← places</button>
-        <header className="trip-detail-heading">
+                <header className="trip-detail-heading">
           <h1>{activeTrip.title}</h1>
           <p>{formatDateRange(activeTrip.start_date, activeTrip.end_date)}</p>
         </header>
@@ -523,13 +522,10 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
                 {latestTrip?.coverUrl
                   ? <img src={latestTrip.coverUrl} alt="" loading="lazy" />
                   : <span className="travel-city-image-placeholder">{city.city_display_name.slice(0, 1)}</span>}
-                <span className="travel-city-count">{String(city.trips.length).padStart(2, '0')}</span>
               </span>
               <span className="travel-city-card-info">
                 <span className="travel-city-name">{city.city_display_name}</span>
-                <span className="travel-city-meta">{city.trips.length} {city.trips.length === 1 ? 'TRIP' : 'TRIPS'}</span>
               </span>
-              <span className="travel-city-arrow" aria-hidden="true">↗</span>
             </button>
           );
         })}
@@ -538,7 +534,6 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
         <div className="city-panel-shade" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedCity(null); }}>
           <section className="city-panel" role="dialog" aria-modal="true" aria-label={`${selectedCity.city_display_name} travel records`}>
             <button className="city-panel-close" onClick={() => setSelectedCity(null)} aria-label="Close city panel">×</button>
-            <p className="city-panel-kicker">TRAVEL ARCHIVE</p>
             <h2>{selectedCity.city_display_name}</h2>
             <div className="city-trip-list">
               {selectedCityTrips.map((trip) => (
@@ -591,6 +586,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
 
 function App() {
   const [page, setPage] = useState('home');
+  const [mapViewKey, setMapViewKey] = useState(0);
 
   const [loginOpen, setLoginOpen] = useState(false);
   const [session, setSession] = useState(null);
@@ -928,7 +924,7 @@ function App() {
 
         <button
           className="nav-link"
-          onClick={() => setPage('map')}
+          onClick={() => { setPage('map'); setMapViewKey((key) => key + 1); }}
         >
           map
         </button>
@@ -983,6 +979,7 @@ function App() {
       {page === 'map' && (
         <>
           <TravelMap
+            key={mapViewKey}
             supabase={supabase}
             isAdmin={isAdmin}
             session={session}
