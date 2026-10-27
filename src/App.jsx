@@ -997,7 +997,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
         translated_title: form.translated_title.trim() || null,
         info_heading: form.info_heading.trim() || 'Actor',
         info_content: form.info_content.trim() || null,
-        synopsis_note: form.trailer_note.trim() || null,
+        synopsis_note: form.synopsis_note.trim() || null,
         poster_storage_path: storagePath,
         created_by: session.user.id,
       }).select('*').single();
