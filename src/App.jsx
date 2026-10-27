@@ -465,6 +465,111 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
     }
   }
 
+  async function deleteTravelRecord(trip, { refresh = true } = {}) {
+    if (!supabase || !isAdmin) {
+      setError('Admin access is required to delete travel records.');
+      return false;
+    }
+
+    const photoPaths = (trip.photos || []).map((photo) => photo.storage_path).filter(Boolean);
+    const { error: photosError } = await supabase
+      .from('travel_photos')
+      .delete()
+      .eq('trip_id', trip.id);
+    if (photosError) {
+      setError(photosError.message || 'Could not delete the travel photos.');
+      return false;
+    }
+
+    const { error: tripError } = await supabase
+      .from('travel_trips')
+      .delete()
+      .eq('id', trip.id);
+    if (tripError) {
+      setError(tripError.message || 'Could not delete the travel record.');
+      return false;
+    }
+
+    if (photoPaths.length) {
+      const { error: storageError } = await supabase.storage.from('travel-photos').remove(photoPaths);
+      if (storageError) console.error('Travel photo storage cleanup failed:', storageError);
+    }
+
+    if (selectedTrip?.id === trip.id) {
+      setSelectedTrip(null);
+      setTripLightbox(null);
+    }
+    if (refresh) await loadTrips();
+    return true;
+  }
+
+  async function deleteTravelPhoto(trip, photo) {
+    if (!supabase || !isAdmin) {
+      setError('Admin access is required to delete travel photos.');
+      return;
+    }
+
+    if ((trip.photos || []).length <= 1) {
+      const confirmed = window.confirm('This is the last photo in this trip. Delete the entire travel record and its city entry?');
+      if (!confirmed) return;
+      const deleted = await deleteTravelRecord(trip);
+      if (deleted) setSelectedCity(null);
+      return;
+    }
+
+    const confirmed = window.confirm('Delete this travel photo? This cannot be undone.');
+    if (!confirmed) return;
+
+    const { error: rowError } = await supabase.from('travel_photos').delete().eq('id', photo.id);
+    if (rowError) {
+      setError(rowError.message || 'Could not delete this travel photo.');
+      return;
+    }
+
+    const remaining = trip.photos.filter((item) => item.id !== photo.id);
+    const nextCoverPath = trip.cover_storage_path === photo.storage_path
+      ? (remaining[0]?.storage_path || null)
+      : trip.cover_storage_path;
+    const { error: coverError } = await supabase
+      .from('travel_trips')
+      .update({ cover_storage_path: nextCoverPath, updated_at: new Date().toISOString() })
+      .eq('id', trip.id);
+    if (coverError) {
+      setError(coverError.message || 'Photo deleted, but the cover could not be updated.');
+    }
+
+    const { error: storageError } = await supabase.storage.from('travel-photos').remove([photo.storage_path]);
+    if (storageError) console.error('Travel photo storage cleanup failed:', storageError);
+
+    setTripLightbox(null);
+    await loadTrips();
+  }
+
+  async function deleteCity(city) {
+    if (!isAdmin) {
+      setError('Admin access is required to delete cities.');
+      return;
+    }
+    const cityTrips = trips.filter((trip) => trip.city_name.trim().toLowerCase() === city.key);
+    const confirmed = window.confirm(`Delete ${city.city_display_name} and all ${cityTrips.length} travel record(s) in this city? This cannot be undone.`);
+    if (!confirmed) return;
+
+    setSaving(true);
+    setError('');
+    try {
+      for (const trip of cityTrips) {
+        const deleted = await deleteTravelRecord(trip, { refresh: false });
+        if (!deleted) return;
+      }
+      setSelectedCity(null);
+      setSelectedTrip(null);
+      setTripLightbox(null);
+      await loadTrips();
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const selectedCityTrips = selectedCity
     ? trips.filter((trip) => trip.city_name.trim().toLowerCase() === selectedCity.key)
     : [];
@@ -473,17 +578,33 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
     const activeTrip = trips.find((trip) => trip.id === selectedTrip.id) || selectedTrip;
     return (
       <main className="trip-detail-page">
-                <header className="trip-detail-heading">
-          <h1>{activeTrip.title}</h1>
-          <p>{formatDateRange(activeTrip.start_date, activeTrip.end_date)}</p>
+        <header className="trip-detail-heading">
+          <div>
+            <h1>{activeTrip.title}</h1>
+            <p>{formatDateRange(activeTrip.start_date, activeTrip.end_date)}</p>
+          </div>
+          {isAdmin && (
+            <button
+              className="travel-delete-button"
+              type="button"
+              onClick={async () => {
+                const confirmed = window.confirm(`Delete “${activeTrip.title}” and all of its photos? This cannot be undone.`);
+                if (!confirmed) return;
+                await deleteTravelRecord(activeTrip);
+              }}
+            >delete trip</button>
+          )}
         </header>
         {activeTrip.description && <p className="trip-description">{activeTrip.description}</p>}
         <section className="trip-photo-grid">
           {activeTrip.photos.map((photo, index) => (
-            <button className="trip-photo-tile" key={photo.id} onClick={() => setTripLightbox(index)} aria-label={`Open photo ${index + 1}`}>
-              <img src={photo.url} alt={photo.title || activeTrip.title} loading="lazy" />
-              {photo.title && <span>{photo.title}</span>}
-            </button>
+            <article className="trip-photo-item" key={photo.id}>
+              <button className="trip-photo-tile" type="button" onClick={() => setTripLightbox(index)} aria-label={`Open photo ${index + 1}`}>
+                <img src={photo.url} alt={photo.title || activeTrip.title} loading="lazy" />
+                {photo.title && <span>{photo.title}</span>}
+              </button>
+              {isAdmin && <button className="travel-delete-button photo-delete-button" type="button" onClick={() => deleteTravelPhoto(activeTrip, photo)}>delete photo</button>}
+            </article>
           ))}
         </section>
         {tripLightbox !== null && activeTrip.photos[tripLightbox] && (
@@ -527,7 +648,10 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
       {selectedCity && (
         <div className="city-panel-shade" onClick={(event) => { if (event.target === event.currentTarget) setSelectedCity(null); }}>
           <section className="city-panel" role="dialog" aria-modal="true" aria-label={`${selectedCity.city_display_name} travel records`}>
-            <h2>{selectedCity.city_display_name}</h2>
+            <div className="city-panel-heading">
+              <h2>{selectedCity.city_display_name}</h2>
+              {isAdmin && <button className="travel-delete-button" type="button" disabled={saving} onClick={() => deleteCity(selectedCity)}>delete city</button>}
+            </div>
             <div className="city-trip-list">
               {selectedCityTrips.map((trip) => (
                 <article className="city-trip-card" key={trip.id}>
@@ -537,7 +661,18 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
                   <div className="city-trip-info">
                     <h3>{trip.title}</h3>
                     <p>{formatDateRange(trip.start_date, trip.end_date)}</p>
-                    <button className="view-more-button" onClick={() => { setSelectedTrip(trip); setSelectedCity(null); }}>view more</button>
+                    <div className="city-trip-actions">
+                      <button className="view-more-button" onClick={() => { setSelectedTrip(trip); setSelectedCity(null); }}>view more</button>
+                      {isAdmin && <button className="travel-delete-button" type="button" onClick={async () => {
+                        const confirmed = window.confirm(`Delete “${trip.title}” and all of its photos? This cannot be undone.`);
+                        if (!confirmed) return;
+                        const deleted = await deleteTravelRecord(trip);
+                        if (deleted) {
+                          const stillHasCityTrips = trips.some((item) => item.id !== trip.id && item.city_name.trim().toLowerCase() === selectedCity.key);
+                          if (!stillHasCityTrips) setSelectedCity(null);
+                        }
+                      }}>delete trip</button>}
+                    </div>
                   </div>
                 </article>
               ))}
@@ -1156,6 +1291,16 @@ function App() {
                       if (deleteError) {
                         setError(getErrorMessage(deleteError));
                       } else {
+                        const storagePaths = (item.post.photos || [])
+                          .map((photo) => photo.storage_path)
+                          .filter(Boolean);
+                        if (storagePaths.length) {
+                          const { error: storageError } = await supabase
+                            .storage
+                            .from('public-post-photos')
+                            .remove(storagePaths);
+                          if (storageError) console.error('Diary photo storage cleanup failed:', storageError);
+                        }
                         setLightboxIndex(null);
                         await loadPosts();
                       }
