@@ -867,18 +867,24 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
 }
 
 /* ========================================
-   Archive / film poster carousel
+   Archive / movie poster carousel + film pages
 ======================================== */
 function ArchivePage({ supabase, isAdmin, session, setError }) {
   const [movies, setMovies] = useState([]);
+  const [items, setItems] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [editMode, setEditMode] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [posterFile, setPosterFile] = useState(null);
-  const [form, setForm] = useState({ title: '', release_year: '', rating: '', thoughts: '' });
+  const [itemFile, setItemFile] = useState(null);
   const [detailMovie, setDetailMovie] = useState(null);
+  const [transitioningId, setTransitioningId] = useState(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [form, setForm] = useState({ title: '', translated_title: '', info_heading: 'Actor', info_content: '', trailer_note: '' });
+  const [itemForm, setItemForm] = useState({ type: 'text', text: '' });
   const startX = useRef(null);
 
   async function loadMovies() {
@@ -895,16 +901,28 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
       }));
       setMovies(rows);
       setActiveIndex((current) => Math.min(current, Math.max(0, rows.length - 1)));
+      setDetailMovie((current) => current ? rows.find((movie) => movie.id === current.id) || null : null);
     }
     setLoading(false);
   }
 
+  async function loadItems(movieId) {
+    if (!supabase || !movieId) { setItems([]); return; }
+    const { data, error } = await supabase.from('archive_items').select('*').eq('movie_id', movieId).order('sort_order', { ascending: true }).order('created_at', { ascending: true });
+    if (error) { setError(error.message); setItems([]); return; }
+    setItems((data || []).map((item) => ({
+      ...item,
+      image_url: item.storage_path ? supabase.storage.from('movie-posters').getPublicUrl(item.storage_path).data.publicUrl : null,
+    })));
+  }
+
   useEffect(() => { loadMovies(); }, [supabase]);
+  useEffect(() => { if (detailMovie?.id) loadItems(detailMovie.id); else setItems([]); }, [detailMovie?.id, supabase]);
   useEffect(() => {
     const open = () => {
       if (!isAdmin) return;
       setPosterFile(null);
-      setForm({ title: '', release_year: '', rating: '', thoughts: '' });
+      setForm({ title: '', translated_title: '', info_heading: 'Actor', info_content: '', trailer_note: '' });
       setModalOpen(true);
     };
     window.addEventListener('jewsworld-archive-star', open);
@@ -924,6 +942,14 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
     setTilt({ x: (0.5 - y) * 7, y: (x - 0.5) * 10 });
   }
 
+  async function uploadFile(file, prefix = 'archive') {
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const path = `${session.user.id}/${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+    const { error } = await supabase.storage.from('movie-posters').upload(path, file, { upsert: false, contentType: file.type || 'image/jpeg' });
+    if (error) throw error;
+    return path;
+  }
+
   async function saveMovie(event) {
     event.preventDefault();
     if (!supabase || !session || !isAdmin) { setError('Please log in as administrator to add a movie.'); return; }
@@ -931,21 +957,20 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
     setSaving(true);
     let storagePath = '';
     try {
-      const extension = posterFile.name.split('.').pop()?.toLowerCase() || 'jpg';
-      storagePath = `${session.user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
-      const { error: uploadError } = await supabase.storage.from('movie-posters').upload(storagePath, posterFile, { upsert: false, contentType: posterFile.type || 'image/jpeg' });
-      if (uploadError) throw uploadError;
-      const { error: insertError } = await supabase.from('archive_movies').insert({
-        title: form.title.trim() || null,
-        release_year: form.release_year ? Number(form.release_year) : null,
-        rating: form.rating ? Number(form.rating) : null,
-        thoughts: form.thoughts.trim() || null,
+      storagePath = await uploadFile(posterFile, 'poster');
+      const { data, error } = await supabase.from('archive_movies').insert({
+        title: form.title.trim() || 'Untitled film',
+        translated_title: form.translated_title.trim() || null,
+        info_heading: form.info_heading.trim() || 'Actor',
+        info_content: form.info_content.trim() || null,
+        trailer_note: form.trailer_note.trim() || null,
         poster_storage_path: storagePath,
         created_by: session.user.id,
-      });
-      if (insertError) throw insertError;
+      }).select('*').single();
+      if (error) throw error;
       setModalOpen(false);
       await loadMovies();
+      setDetailMovie({ ...data, poster_url: supabase.storage.from('movie-posters').getPublicUrl(storagePath).data.publicUrl });
       setActiveIndex(Math.max(0, movies.length));
     } catch (error) {
       setError(error.message || 'Could not save this movie.');
@@ -953,54 +978,168 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
     } finally { setSaving(false); }
   }
 
+  async function saveFilmInformation(event) {
+    event.preventDefault();
+    if (!detailMovie || !isAdmin) return;
+    setSaving(true);
+    const { data, error } = await supabase.from('archive_movies').update({
+      title: form.title.trim() || 'Untitled film', translated_title: form.translated_title.trim() || null,
+      info_heading: form.info_heading.trim() || 'Actor', info_content: form.info_content.trim() || null,
+      trailer_note: form.trailer_note.trim() || null,
+    }).eq('id', detailMovie.id).select('*').single();
+    if (error) setError(error.message);
+    else { setDetailMovie({ ...data, poster_url: detailMovie.poster_url }); setEditMode(''); await loadMovies(); }
+    setSaving(false);
+  }
+
+  async function changePoster(event) {
+    event.preventDefault();
+    if (!detailMovie || !posterFile || !isAdmin) return;
+    setSaving(true);
+    let newPath = '';
+    try {
+      newPath = await uploadFile(posterFile, 'poster');
+      const oldPath = detailMovie.poster_storage_path;
+      const { data, error } = await supabase.from('archive_movies').update({ poster_storage_path: newPath }).eq('id', detailMovie.id).select('*').single();
+      if (error) throw error;
+      const nextMovie = { ...data, poster_url: supabase.storage.from('movie-posters').getPublicUrl(newPath).data.publicUrl };
+      setDetailMovie(nextMovie); setPosterFile(null); setEditMode(''); await loadMovies();
+      if (oldPath) await supabase.storage.from('movie-posters').remove([oldPath]);
+    } catch (error) { setError(error.message || 'Could not change poster.'); if (newPath) await supabase.storage.from('movie-posters').remove([newPath]); }
+    setSaving(false);
+  }
+
+  async function saveItem(event) {
+    event.preventDefault();
+    if (!detailMovie || !isAdmin || !supabase) return;
+    if (itemForm.type === 'image' && !itemFile) { setError('Please choose a photo.'); return; }
+    if (itemForm.type === 'text' && !itemForm.text.trim()) { setError('Please enter some text.'); return; }
+    setSaving(true);
+    let path = '';
+    try {
+      if (itemForm.type === 'image') path = await uploadFile(itemFile, 'still');
+      const { error } = await supabase.from('archive_items').insert({
+        movie_id: detailMovie.id, item_type: itemForm.type,
+        content: itemForm.type === 'text' ? itemForm.text.trim() : null,
+        storage_path: path || null, sort_order: items.length,
+        created_by: session.user.id,
+      });
+      if (error) throw error;
+      setEditMode(''); setItemFile(null); setItemForm({ type: 'text', text: '' }); await loadItems(detailMovie.id);
+    } catch (error) { setError(error.message || 'Could not add this content.'); if (path) await supabase.storage.from('movie-posters').remove([path]); }
+    setSaving(false);
+  }
+
+  async function deleteItem(item) {
+    if (!isAdmin || !window.confirm('Delete this item?')) return;
+    const { error } = await supabase.from('archive_items').delete().eq('id', item.id);
+    if (error) { setError(error.message); return; }
+    if (item.storage_path) await supabase.storage.from('movie-posters').remove([item.storage_path]);
+    await loadItems(detailMovie.id);
+  }
+
+  async function shiftItem(index, direction) {
+    const target = index + direction;
+    if (!isAdmin || target < 0 || target >= items.length) return;
+    const next = [...items]; [next[index], next[target]] = [next[target], next[index]];
+    setItems(next);
+    const results = await Promise.all(next.map((item, sort_order) => supabase.from('archive_items').update({ sort_order }).eq('id', item.id)));
+    const failed = results.find((result) => result.error);
+    if (failed) setError(failed.error.message); else await loadItems(detailMovie.id);
+  }
+
+  async function deleteMovie() {
+    if (!detailMovie || !isAdmin || !window.confirm(`Delete “${detailMovie.title || 'this film'}” and all its content? This cannot be undone.`)) return;
+    const { error } = await supabase.from('archive_movies').delete().eq('id', detailMovie.id);
+    if (error) { setError(error.message); return; }
+    if (detailMovie.poster_storage_path) await supabase.storage.from('movie-posters').remove([detailMovie.poster_storage_path]);
+    for (const item of items) if (item.storage_path) await supabase.storage.from('movie-posters').remove([item.storage_path]);
+    setDetailMovie(null); setMenuOpen(false); setEditMode(''); await loadMovies();
+  }
+
+  function openMovie(movie, index) {
+    if (index !== activeIndex) {
+      setTransitioningId(movie.id);
+      window.setTimeout(() => { setActiveIndex(index); setDetailMovie(movie); setTransitioningId(null); }, 420);
+    } else setDetailMovie(movie);
+  }
+
+  const currentForm = detailMovie ? {
+    title: detailMovie.title || '', translated_title: detailMovie.translated_title || '',
+    info_heading: detailMovie.info_heading || 'Actor', info_content: detailMovie.info_content || '',
+    trailer_note: detailMovie.trailer_note || '',
+  } : form;
+  const setCurrentForm = (next) => setForm((old) => ({ ...old, ...next }));
+
   return (
-    <main className="archive-page" onKeyDown={(event) => { if (event.key === 'ArrowLeft') move(-1); if (event.key === 'ArrowRight') move(1); }} tabIndex={0}>
-      <section className="archive-carousel" aria-label="Movie poster carousel"
+    <main className={`archive-page ${detailMovie ? 'archive-detail-page' : ''}`} onKeyDown={(event) => { if (event.key === 'ArrowLeft' && !detailMovie) move(-1); if (event.key === 'ArrowRight' && !detailMovie) move(1); }} tabIndex={0}>
+      {!detailMovie && <section className="archive-carousel" aria-label="Movie poster carousel"
         onWheel={(event) => { if (Math.abs(event.deltaX) > 8 || Math.abs(event.deltaY) > 18) { event.preventDefault(); move((event.deltaX || event.deltaY) > 0 ? 1 : -1); } }}>
-        {loading ? null : movies.length === 0 ? null : movies.map((movie, index) => {
+        {!loading && movies.map((movie, index) => {
           let offset = index - activeIndex;
           if (offset > movies.length / 2) offset -= movies.length;
           if (offset < -movies.length / 2) offset += movies.length;
           if (Math.abs(offset) > 2) return null;
           const isActive = offset === 0;
-          return (
-            <button type="button" key={movie.id} className={`archive-poster-card ${isActive ? 'is-current' : ''}`}
-              style={{ '--poster-offset': offset, '--poster-depth': Math.abs(offset), '--pointer-rotate-x': isActive ? `${tilt.x}deg` : '0deg', '--pointer-rotate-y': isActive ? `${tilt.y}deg` : `${offset * -18}deg` }}
-              onMouseMove={isActive ? handlePointerMove : undefined} onMouseLeave={() => setTilt({ x: 0, y: 0 })}
-              onTouchStart={(event) => { startX.current = event.touches[0]?.clientX ?? null; }}
-              onTouchEnd={(event) => { const endX = event.changedTouches[0]?.clientX; if (startX.current != null && endX != null && Math.abs(endX - startX.current) > 35) move(endX < startX.current ? 1 : -1); startX.current = null; }}
-              onClick={() => { if (!isActive) setActiveIndex(index); else setDetailMovie(movie); }} aria-label={movie.title || 'Movie poster'}>
-              <img src={movie.poster_url} alt={movie.title || 'Movie poster'} draggable="false" />
-            </button>
-          );
+          return <button type="button" key={movie.id} className={`archive-poster-card ${isActive ? 'is-current' : ''} ${transitioningId === movie.id ? 'is-awakening' : ''}`}
+            style={{ '--poster-offset': offset, '--poster-depth': Math.abs(offset), '--pointer-rotate-x': isActive ? `${tilt.x}deg` : '0deg', '--pointer-rotate-y': isActive ? `${tilt.y}deg` : `${offset * -18}deg` }}
+            onMouseMove={isActive ? handlePointerMove : undefined} onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+            onTouchStart={(event) => { startX.current = event.touches[0]?.clientX ?? null; }}
+            onTouchEnd={(event) => { const endX = event.changedTouches[0]?.clientX; if (startX.current != null && endX != null && Math.abs(endX - startX.current) > 35) move(endX < startX.current ? 1 : -1); startX.current = null; }}
+            onClick={() => openMovie(movie, index)} aria-label={movie.title || 'Movie poster'}>
+            <img src={movie.poster_url} alt={movie.title || 'Movie poster'} draggable="false" />
+          </button>;
         })}
-      </section>
+      </section>}
 
-      {modalOpen && <div className="modal-shade" onMouseDown={(event) => { if (event.target === event.currentTarget) setModalOpen(false); }}>
-        <section className="archive-form-panel archive-upload-only" aria-label="Upload poster">
-          <button type="button" className="modal-close" onClick={() => setModalOpen(false)} aria-label="Close">×</button>
-          <form onSubmit={saveMovie}>
-            <label className="archive-upload-prompt">
-              {posterFile ? posterFile.name : 'Upload poster'}
-              <input type="file" accept="image/*" required onChange={(event) => setPosterFile(event.target.files?.[0] || null)} />
-            </label>
-            <button className="archive-upload-submit" type="submit" disabled={saving || !posterFile}>{saving ? 'uploading…' : 'Upload poster'}</button>
-          </form>
-        </section>
-      </div>}
-
-      {detailMovie && <div className="modal-shade archive-detail-shade" onMouseDown={(event) => { if (event.target === event.currentTarget) setDetailMovie(null); }}>
-        <section className="archive-detail-panel" aria-label="Movie details">
-          <button type="button" className="modal-close" onClick={() => setDetailMovie(null)} aria-label="Close">×</button>
-          <img src={detailMovie.poster_url} alt={detailMovie.title || 'Movie poster'} />
-          <div className="archive-detail-copy">
-            {detailMovie.title && <h2>{detailMovie.title}</h2>}
-            {detailMovie.release_year && <p>{detailMovie.release_year}</p>}
-            {detailMovie.rating != null && <p className="archive-detail-rating">{detailMovie.rating} / 10</p>}
-            {detailMovie.thoughts && <p className="archive-thoughts">{detailMovie.thoughts}</p>}
+      {detailMovie && <>
+        <button className="archive-back-button" type="button" onClick={() => { setDetailMovie(null); setMenuOpen(false); setEditMode(''); }}>← Archive</button>
+        <button type="button" className="archive-detail-star" onClick={() => setMenuOpen((value) => !value)} aria-label="Archive film options">★</button>
+        {menuOpen && <div className="archive-action-menu">
+          <button onClick={() => { setPosterFile(null); setEditMode('poster'); setMenuOpen(false); }}>Change Poster</button>
+          <button onClick={() => { setForm(currentForm); setEditMode('information'); setMenuOpen(false); }}>Edit Information</button>
+          <button onClick={() => { setItemForm({ type: 'text', text: '' }); setItemFile(null); setEditMode('add-content'); setMenuOpen(false); }}>Add Photo &amp; Text</button>
+          <button onClick={() => { setEditMode('manage-content'); setMenuOpen(false); }}>Manage Content</button>
+          <button className="archive-delete-action" onClick={deleteMovie}>Delete Film</button>
+        </div>}
+        <header className="archive-film-header">
+          <h1>{detailMovie.title || 'Untitled film'}</h1>
+          {detailMovie.translated_title && <h2>{detailMovie.translated_title}</h2>}
+          <div className="archive-film-meta">
+            <section><h3>{detailMovie.info_heading || 'Actor'}</h3><p>{detailMovie.info_content || ''}</p></section>
+            <section><h3>Trailer</h3><p>{detailMovie.trailer_note || ''}</p></section>
           </div>
+        </header>
+        <section className="archive-film-content">
+          {items.map((item, index) => <article key={item.id} className={`archive-content-item ${item.item_type === 'image' ? 'is-image' : 'is-text'} ${index % 2 ? 'is-reversed' : ''}`}>
+            {item.item_type === 'image' ? <img src={item.image_url} alt="Film memory" /> : <div className="archive-content-text">{item.content}</div>}
+            {isAdmin && <div className="archive-item-controls"><button disabled={index === 0} onClick={() => shiftItem(index, -1)} aria-label="Move item up">↑</button><button disabled={index === items.length - 1} onClick={() => shiftItem(index, 1)} aria-label="Move item down">↓</button><button onClick={() => deleteItem(item)} aria-label="Delete item">×</button></div>}
+          </article>)}
         </section>
-      </div>}
+        {movies.length > 1 && <nav className="archive-neighbor-nav" aria-label="Previous and next films">
+          {[-1, 1].map((direction) => { const index = (activeIndex + direction + movies.length) % movies.length; const movie = movies[index]; return <button key={direction} type="button" className={`archive-neighbor archive-neighbor-${direction < 0 ? 'prev' : 'next'}`} onClick={() => openMovie(movie, index)}><img src={movie.poster_url} alt={movie.title || 'Film poster'} /><span>{direction < 0 ? 'Previous film' : 'Next film'}</span></button>; })}
+        </nav>}
+      </>}
+
+      {modalOpen && <div className="modal-shade" onMouseDown={(event) => { if (event.target === event.currentTarget) setModalOpen(false); }}><section className="archive-form-panel archive-upload-only" aria-label="Upload poster"><button type="button" className="modal-close" onClick={() => setModalOpen(false)} aria-label="Close">×</button>
+        <form onSubmit={saveMovie}>
+          <label className="archive-upload-prompt">{posterFile ? posterFile.name : 'Upload poster'}<input type="file" accept="image/*" required onChange={(event) => setPosterFile(event.target.files?.[0] || null)} /></label>
+          <button className="archive-upload-submit" type="submit" disabled={saving || !posterFile}>{saving ? 'uploading…' : 'Upload poster'}</button>
+        </form>
+      </section></div>}
+
+      {editMode && <div className="modal-shade" onMouseDown={(event) => { if (event.target === event.currentTarget) setEditMode(''); }}><section className="archive-form-panel archive-editor-panel"><button type="button" className="modal-close" onClick={() => setEditMode('')} aria-label="Close">×</button>
+        {editMode === 'information' && <form onSubmit={saveFilmInformation} className="archive-editor-form"><h2>Edit Information</h2>
+          <label>Film title<input value={form.title} onChange={(e) => setCurrentForm({ title: e.target.value })} required /></label>
+          <label>Translated title<input value={form.translated_title} onChange={(e) => setCurrentForm({ translated_title: e.target.value })} /></label>
+          <label>Information heading<input value={form.info_heading} onChange={(e) => setCurrentForm({ info_heading: e.target.value })} placeholder="Actor / Actress / Director" /></label>
+          <label>Information content<input value={form.info_content} onChange={(e) => setCurrentForm({ info_content: e.target.value })} /></label>
+          <label>Trailer note<textarea rows="3" value={form.trailer_note} onChange={(e) => setCurrentForm({ trailer_note: e.target.value })} /></label>
+          <button className="archive-upload-submit" disabled={saving}>{saving ? 'saving…' : 'Save changes'}</button></form>}
+        {editMode === 'poster' && <form onSubmit={changePoster} className="archive-editor-form"><h2>Change Poster</h2><label className="archive-upload-prompt">{posterFile ? posterFile.name : 'Choose a new poster'}<input type="file" accept="image/*" required onChange={(e) => setPosterFile(e.target.files?.[0] || null)} /></label><button className="archive-upload-submit" disabled={saving || !posterFile}>{saving ? 'saving…' : 'Change poster'}</button></form>}
+        {editMode === 'add-content' && <form onSubmit={saveItem} className="archive-editor-form"><h2>Add Photo &amp; Text</h2><label>Content type<select value={itemForm.type} onChange={(e) => setItemForm({ type: e.target.value, text: '' })}><option value="text">Text</option><option value="image">Photo</option></select></label>{itemForm.type === 'text' ? <label>Text<textarea rows="6" value={itemForm.text} onChange={(e) => setItemForm({ ...itemForm, text: e.target.value })} required /></label> : <label className="archive-upload-prompt">{itemFile ? itemFile.name : 'Choose a photo'}<input type="file" accept="image/*" required onChange={(e) => setItemFile(e.target.files?.[0] || null)} /></label>}<button className="archive-upload-submit" disabled={saving}>{saving ? 'saving…' : 'Add to film'}</button></form>}
+        {editMode === 'manage-content' && <div className="archive-editor-form"><h2>Manage Content</h2>{items.length === 0 && <p>No content yet.</p>}{items.map((item, index) => <div className="archive-manage-row" key={item.id}><span>{index + 1}. {item.item_type === 'image' ? 'Photo' : (item.content || '').slice(0, 55) || 'Text'}</span><div><button disabled={index === 0} onClick={() => shiftItem(index, -1)}>↑</button><button disabled={index === items.length - 1} onClick={() => shiftItem(index, 1)}>↓</button><button onClick={() => deleteItem(item)}>×</button></div></div>)}<button className="archive-upload-submit" onClick={() => { setEditMode('add-content'); setItemForm({ type: 'text', text: '' }); }}>Add content</button></div>}
+      </section></div>}
     </main>
   );
 }
