@@ -1514,3 +1514,137 @@ input:focus-visible {
   .trip-detail-heading > .travel-delete-button { position: static; align-self: center; }
   .trip-photo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ========================================
+   Active navigation star + editable memories
+======================================== */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(8px, 1.8vw, 24px);
+}
+.nav-item-wrap {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, .45vw, 7px);
+  min-width: 0;
+}
+.nav-link {
+  color: #888;
+  transition: color .18s ease, opacity .18s ease;
+}
+.nav-link.is-active {
+  color: #111;
+}
+.nav-link:hover { color: #111; opacity: 1; }
+.nav-star-button {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  padding: 0 1px !important;
+  color: #111;
+  font-size: clamp(15px, 1.4vw, 21px) !important;
+  line-height: 1 !important;
+  vertical-align: middle;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+.nav-star-button:hover { opacity: .5; transform: rotate(12deg); }
+
+/* The diary's star now lives in the navigation. Keep the date wheels level. */
+.date-columns > .wheel-wrap { margin-top: 0 !important; }
+.month-column > .wheel-wrap { margin-top: 0 !important; }
+.view-day-button {
+  margin-top: 26px;
+  padding: 8px 12px;
+  border: 1px solid #dedede;
+  background: #fff;
+  color: #777;
+  font-size: 10px;
+  letter-spacing: .04em;
+  text-transform: lowercase;
+}
+.view-day-button:hover { color: #111; border-color: #999; }
+
+.edit-trip-panel,
+.diary-form-panel {
+  width: min(100%, 640px);
+  max-height: min(84vh, 820px);
+  overflow-y: auto;
+}
+.edit-trip-panel h2,
+.diary-form-panel h2 {
+  margin: 0 0 22px;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -.045em;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+.edit-panel-kicker {
+  margin: 0 0 10px;
+  color: #888;
+  font-size: 9px;
+  letter-spacing: .13em;
+}
+.edit-section-label {
+  margin: 2px 0 10px;
+  font-size: 10px;
+  color: #777;
+}
+.edit-photo-list,
+.edit-new-photo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 4px 0 8px;
+}
+.edit-photo-row {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 9px;
+  background: #f7f7f6;
+}
+.edit-photo-row > img {
+  display: block;
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+}
+.edit-photo-fields { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.edit-photo-actions { display: flex; flex-wrap: wrap; gap: 5px; }
+.edit-photo-actions button,
+.edit-cancel-button {
+  padding: 7px 9px;
+  border: 1px solid #dedede;
+  background: #fff;
+  color: #555;
+  font-size: 10px;
+}
+.edit-photo-actions button:disabled { opacity: .3; cursor: default; }
+.edit-photo-actions .edit-remove-photo { color: #a23d3d; }
+.edit-photo-actions .edit-remove-photo:disabled { opacity: .35; }
+.edit-trip-footer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.edit-trip-footer .travel-publish-button { flex: 1 1 180px; }
+.selected-file-name { margin: -5px 0 0; font-size: 10px; color: #777; overflow-wrap: anywhere; }
+.diary-form-panel .edit-cancel-button { width: 100%; text-align: center; }
+
+@media (max-width: 600px) {
+  .site-header {
+    gap: 8px;
+    padding: 18px 12px;
+  }
+  .nav-item-wrap { gap: 3px; }
+  .nav-link { font-size: clamp(11px, 3.2vw, 14px); }
+  .nav-star-button { font-size: 16px !important; }
+  .date-columns { gap: 6px; }
+  .view-day-button { margin-top: 20px; }
+  .edit-photo-row { grid-template-columns: 68px minmax(0, 1fr); gap: 9px; }
+  .edit-photo-row > img { width: 68px; height: 68px; }
+  .edit-trip-panel, .diary-form-panel { padding: 20px 16px; max-height: 86vh; }
+}
