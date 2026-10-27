@@ -459,7 +459,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
           city_display_name: form.city_display_name.trim() || form.city_name.trim().toUpperCase(),
           latitude: lat,
           longitude: lng,
-          title: form.title.trim(),
+          title: form.title.trim(),o
           start_date: form.start_date,
           end_date: form.end_date,
           description: form.description.trim() || null,
@@ -1079,7 +1079,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
   const currentForm = detailMovie ? {
     title: detailMovie.title || '', translated_title: detailMovie.translated_title || '',
     info_heading: detailMovie.info_heading || 'Actor', info_content: detailMovie.info_content || '',
-    synopsis _note: detailMovie.synopsis_note || '',
+    synopsis_note: detailMovie.synopsis_note || '',
   } : form;
   const setCurrentForm = (next) => setForm((old) => ({ ...old, ...next }));
 
