@@ -881,6 +881,28 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
   const [posterFile, setPosterFile] = useState(null);
   const [itemFile, setItemFile] = useState(null);
   const [detailMovie, setDetailMovie] = useState(null);
+  useEffect(() => {
+  const returnToArchive = () => {
+
+    setDetailMovie(null);
+
+    setMenuOpen(false);
+
+    setEditMode('');
+
+    setModalOpen(false);
+
+  };
+
+  window.addEventListener('jewsworld-archive-home', returnToArchive);
+
+  return () => {
+
+    window.removeEventListener('jewsworld-archive-home', returnToArchive);
+
+  };
+
+}, []);
   const [transitioningId, setTransitioningId] = useState(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [form, setForm] = useState({ title: '', translated_title: '', info_heading: 'Actor', info_content: '', Synopsis_note: '' });
@@ -1122,7 +1144,11 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
         </header>
         <section className="archive-film-content">
           {items.map((item, index) => <article key={item.id} className={`archive-content-item ${item.item_type === 'image' ? 'is-image' : 'is-text'} ${index % 2 ? 'is-reversed' : ''}`}>
-            {item.item_type === 'image' ? <img src={item.image_url} alt="Film memory" /> : <div className="archive-content-text">{item.content}</div>}
+            {item.item_type === 'image' ? <img src={item.image_url} alt="Film memory" /> : <div className="archive-content-text" tabIndex={0}>
+
+  {item.content}
+
+</div>}
             
           </article>)}
         </section>
@@ -1698,8 +1724,16 @@ function App() {
           return (
             <div className="nav-item-wrap" key={navPage}>
               <button type="button" className={`nav-link ${active ? 'is-active' : ''}`} onClick={() => {
-                if (navPage === 'map') { setPage('map'); setMapViewKey((key) => key + 1); }
-                else setPage(navPage);
+                if (navPage === 'map') {
+  setPage('map');
+  setMapViewKey((key) => key + 1);
+} else {
+  if (navPage === 'archive' && page === 'archive') {
+    window.dispatchEvent(new Event('jewsworld-archive-home'));
+  }
+
+  setPage(navPage);
+}
               }}>{navPage}</button>
               {active && <button type="button" className="map-star-button nav-star-button" onClick={starAction} aria-label={`${navPage} options`} title={navPage === 'about' ? (isAdmin ? 'Log out' : 'Log in') : navPage === 'map' ? 'Add or modify a trip' : navPage === 'archive' ? 'Add a movie' : navPage === 'diary' ? 'Add or manage a diary entry' : 'Home'}>★</button>}
             </div>
