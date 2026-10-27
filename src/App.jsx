@@ -1116,4 +1116,184 @@ function App() {
           )}
 
           {busy && (
-            <p className="subt
+            <p className="subtle-message">loading</p>
+          )}
+
+          {!busy && galleryItems.length === 0 && (
+            <p className="subtle-message">nothing here yet</p>
+          )}
+
+          <section className="photo-gallery" aria-label="Photos">
+            {galleryItems.map((item, index) => (
+              <article className="photo-item" key={item.id}>
+                <button
+                  className="photo-open"
+                  type="button"
+                  onClick={() => setLightboxIndex(index)}
+                  aria-label={`Open ${item.title || 'photo'}`}
+                >
+                  <img
+                    src={item.url}
+                    alt={item.title || 'Diary photo'}
+                    loading="eager"
+                    onLoad={() => console.log('Photo loaded:', item.url)}
+                    onError={(event) => {
+                    console.error('Photo failed:', item.url);
+                    console.error('Image element:', event.currentTarget);
+                    }}
+                  />
+                </button>
+
+                {item.title && (
+                  <p className="photo-title">{item.title}</p>
+                )}
+
+                {isAdmin && (
+                  <button
+                    className="delete-link"
+                    type="button"
+                    onClick={async () => {
+                      const confirmed = window.confirm(
+                        'Delete this photo entry?'
+                      );
+
+                      if (!confirmed || !supabase) return;
+
+                      const { error: deleteError } = await supabase
+                        .from('diary_posts')
+                        .delete()
+                        .eq('id', item.post.id);
+
+                      if (deleteError) {
+                        setError(getErrorMessage(deleteError));
+                      } else {
+                        setLightboxIndex(null);
+                        await loadPosts();
+                      }
+                    }}
+                  >
+                    delete
+                  </button>
+                )}
+              </article>
+            ))}
+          </section>
+
+          {lightboxIndex !== null &&
+            galleryItems[lightboxIndex] && (
+              <div
+                className="lightbox"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Photo viewer"
+                onMouseDown={(event) => {
+                  if (event.target === event.currentTarget) {
+                    setLightboxIndex(null);
+                  }
+                }}
+              >
+                <button
+                  className="lightbox-close"
+                  type="button"
+                  onClick={() => setLightboxIndex(null)}
+                  aria-label="Close photo"
+                >
+                  ×
+                </button>
+
+                {galleryItems.length > 1 && (
+                  <button
+                    className="lightbox-arrow lightbox-prev"
+                    type="button"
+                    onClick={() =>
+                      setLightboxIndex(
+                        (index) =>
+                          (index - 1 + galleryItems.length) %
+                          galleryItems.length
+                      )
+                    }
+                    aria-label="Previous photo"
+                  >
+                    ‹
+                  </button>
+                )}
+
+                <button
+                  className="lightbox-image-button"
+                  type="button"
+                  onClick={() => {
+                    if (galleryItems.length > 1) {
+                      setLightboxIndex(
+                        (index) =>
+                          (index + 1) % galleryItems.length
+                      );
+                    }
+                  }}
+                  aria-label={
+                    galleryItems.length > 1
+                      ? 'Next photo'
+                      : 'Photo'
+                  }
+                >
+                  <img
+                    src={galleryItems[lightboxIndex].url}
+                    alt={
+                      galleryItems[lightboxIndex].title ||
+                      'Diary photo'
+                    }
+                  />
+                </button>
+
+                {galleryItems.length > 1 && (
+                  <button
+                    className="lightbox-arrow lightbox-next"
+                    type="button"
+                    onClick={() =>
+                      setLightboxIndex(
+                        (index) =>
+                          (index + 1) % galleryItems.length
+                      )
+                    }
+                    aria-label="Next photo"
+                  >
+                    ›
+                  </button>
+                )}
+
+                {galleryItems[lightboxIndex].title && (
+                  <p className="lightbox-caption">
+                    {galleryItems[lightboxIndex].title}
+                  </p>
+                )}
+
+                <p className="lightbox-count">
+                  {lightboxIndex + 1} / {galleryItems.length}
+                </p>
+              </div>
+            )}
+        </main>
+      )}
+
+      {!supabaseConfigured && (
+        <p className="config-warning">
+          Supabase is not connected. Check your environment
+          variables and GitHub Actions secrets.
+        </p>
+      )}
+
+      {loginOpen && (
+        <LoginPanel
+          onClose={() => setLoginOpen(false)}
+          onLogin={(nextSession) => {
+            setSession(nextSession);
+            setIsAdmin(
+              nextSession?.user?.app_metadata?.role === 'admin'
+            );
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+export default App;
