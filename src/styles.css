@@ -2086,8 +2086,30 @@ input:focus-visible {
 .archive-editor-form label { display: grid; gap: 7px; color: #555; font-size: 12px; }
 .archive-editor-form input:not([type="file"]), .archive-editor-form textarea, .archive-editor-form select { width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid #e1e0db; border-radius: 0; background: #fff; color: #b9b9c5; font: inherit; font-size: 14px; font-weight: 650; transition: color .15s ease; }
 .archive-editor-form input:not([type="file"]):focus, .archive-editor-form textarea:focus, .archive-editor-form select:focus { color: #111; outline: none; border-color: #b9b9c5; }
-.archive-editor-form .archive-content-text-input { min-height: 150px; color: #b9b9c5; font-size: 14px; font-weight: 650; line-height: 1.6; }
-.archive-editor-form .archive-content-text-input:focus { color: #111; }
+/* Match the editable Information content text to the displayed film information. */
+.archive-editor-form .archive-information-content-input {
+  font-family: inherit;
+  font-size: clamp(15px, 1.4vw, 20px);
+  font-weight: 650;
+  line-height: 1.28;
+  letter-spacing: normal;
+  color: #b9b9c5;
+  transition: color .15s ease;
+}
+.archive-editor-form .archive-information-content-input:focus { color: #111; }
+.archive-editor-form textarea.archive-content-text-input {
+  min-height: 150px;
+  font-family: inherit;
+  font-size: clamp(15px, 1.4vw, 20px);
+  font-weight: 650;
+  line-height: 1.28;
+  letter-spacing: normal;
+  color: #b9b9c5;
+  resize: vertical;
+}
+.archive-editor-form textarea.archive-content-text-input:focus { color: #111; }
+/* Content movement/deletion controls are intentionally removed from the display. */
+.archive-item-controls, .archive-manage-row > div { display: none !important; }
 .archive-manage-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 0; border-bottom: 1px solid #efeee9; font-size: 12px; }
 .archive-manage-row > span { overflow-wrap: anywhere; }
 .archive-manage-row > div { display: flex; gap: 3px; flex-shrink: 0; }
