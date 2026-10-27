@@ -1906,7 +1906,6 @@ input:focus-visible {
   top: 50%;
   left: 50%;
   width: clamp(210px, 25vw, 340px);
-  aspect-ratio: 2 / 3;
   padding: 0;
   border: 0;
   border-radius: 2px;
@@ -1927,8 +1926,8 @@ input:focus-visible {
 .archive-poster-card img {
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
   user-select: none;
   pointer-events: none;
 }
