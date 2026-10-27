@@ -740,7 +740,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
             <article className="trip-photo-item" key={photo.id}>
               <button className="trip-photo-tile" type="button" onClick={() => setTripLightbox(index)} aria-label={`Open photo ${index + 1}`}>
                 <img src={photo.url} alt={photo.title || activeTrip.title} loading="lazy" />
-                <span className="trip-photo-caption">{photo.title || ''}</span><span className="trip-photo-date">{formatTripDate(activeTrip.start_date)}</span>
+                <span className="trip-photo-caption">{photo.title || ''}</span>
               </button>
             </article>
           ))}
