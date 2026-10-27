@@ -1295,3 +1295,66 @@ input:focus-visible {
   .city-trip-info h3, .city-trip-info p { font-size: 11px; }
   .view-more-button { font-size: 10px; }
 }
+
+
+/* Final polish: editorial navigation and reliable overlay dismissal */
+.site-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(12px, 2.4vw, 38px);
+  width: 100%;
+  padding: 30px clamp(10px, 1.4vw, 22px) 12px;
+}
+.site-header::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 10px;
+  height: 9px;
+  background: repeating-linear-gradient(to right, #222 0 1px, transparent 1px 9px);
+  pointer-events: none;
+}
+.nav-link {
+  position: relative;
+  white-space: nowrap;
+  font-size: clamp(13px, 1.12vw, 16px);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -.025em;
+}
+.city-panel-shade {
+  z-index: 200;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, .24);
+  backdrop-filter: blur(2px);
+}
+.city-panel {
+  width: min(760px, calc(100vw - 48px));
+  max-height: min(82vh, 820px);
+  padding: 30px clamp(20px, 3vw, 42px) 28px;
+  box-shadow: 0 18px 70px rgba(0,0,0,.12);
+  animation: panel-in .22s ease-out;
+}
+.city-panel-close { display: none !important; }
+.view-more-button { gap: 0; }
+.view-more-button span { display: none !important; }
+.trip-lightbox-close, .lightbox-close { display: none !important; }
+.trip-lightbox { z-index: 220; background: #fff; color: #111; cursor: zoom-out; }
+.trip-lightbox > img { cursor: default; }
+.lightbox { z-index: 220; background: #fff; color: #111; cursor: zoom-out; }
+.lightbox-image-button { cursor: zoom-in; }
+.form-shade { z-index: 210; justify-content: flex-end; align-items: stretch; padding: 0; background: rgba(0,0,0,.28); }
+@media (max-width: 600px) {
+  .site-header { gap: 10px; padding: 29px 10px 10px; }
+  .nav-link { font-size: 12px; }
+  .city-panel-shade { padding: 12px; }
+  .city-panel { width: calc(100vw - 24px); max-height: 84svh; padding: 27px 16px 20px; }
+}
