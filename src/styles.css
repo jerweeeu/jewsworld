@@ -2065,10 +2065,47 @@ input:focus-visible {
 .archive-film-meta section { min-width: 0; }
 .archive-film-meta h3 { margin: 0 0 4px; color: #111; font-size: clamp(16px, 1.4vw, 20px); font-weight: 700; }
 .archive-film-meta p { margin: 0; color: #b9b9c5; font-size: clamp(15px, 1.4vw, 20px); line-height: 1.28; font-weight: 650; white-space: pre-wrap; overflow-wrap: anywhere; }
-.archive-film-content { display: grid; gap: clamp(54px, 8vw, 120px); max-width: 1240px; margin: 0 auto; }
-.archive-content-item { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 76px); align-items: center; }
-.archive-content-item.is-reversed { direction: rtl; }
-.archive-content-item.is-reversed > * { direction: ltr; }
+.archive-film-content {
+
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  column-gap: clamp(16px, 3vw, 40px);
+
+  row-gap: clamp(28px, 4vw, 56px);
+
+  align-items: start;
+
+  width: 100%;
+
+  max-width: 1240px;
+
+  margin: 0 auto;
+
+}
+
+.archive-content-item {
+
+  position: relative;
+
+  display: block;
+
+  width: 100%;
+
+  min-width: 0;
+
+  align-self: start;
+
+}
+
+.archive-content-item.is-reversed,
+
+.archive-content-item.is-reversed > * {
+
+  direction: ltr;
+
+}
 .archive-content-item > img { display: block; width: 100%; height: auto; max-height: 72vh; object-fit: contain; border-radius: 3px; }
 .archive-content-text {
 color: #b9b9c5;
@@ -2130,7 +2167,7 @@ color: #111111;
 .archive-poster-card { aspect-ratio: auto; overflow: visible; }
 .archive-poster-card.is-awakening { opacity: 1; filter: grayscale(0); }
 @media (max-width: 650px) {
-  .archive-detail-page { padding: 82px 76px 48px; }
+  .archive-detail-page { padding: 82px 16px 48px; }
   .archive-action-menu { top: 68px; right: 12px; width: min(220px, 72vw); }
   .archive-film-header { margin-bottom: 42px; }
   .archive-film-header h1 { font-size: clamp(36px, 10vw, 58px); }
@@ -2139,7 +2176,18 @@ color: #111111;
   .archive-film-meta h3 { font-size: 13px; }
   .archive-film-meta p { font-size: 12px; }
   .archive-film-content { gap: 42px; }
-  .archive-content-item { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .archive-film-content {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 24px;
+}
+
+.archive-content-item {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  gap: 0;
+}
   .archive-content-item.is-reversed { direction: ltr; }
   .archive-content-item.is-reversed.is-image { direction: ltr; }
   .archive-content-item > img { max-height: none; }
