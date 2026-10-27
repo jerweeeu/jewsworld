@@ -1648,3 +1648,140 @@ input:focus-visible {
   .edit-photo-row > img { width: 68px; height: 68px; }
   .edit-trip-panel, .diary-form-panel { padding: 20px 16px; max-height: 86vh; }
 }
+
+/* Latest interaction refinements: destructive actions stay inside editors. */
+.date-wheel-item { cursor: pointer; }
+.date-wheel { overscroll-behavior: contain; }
+.delete-trip-in-editor,
+.delete-day-button {
+  color: #a23d3d !important;
+  border-color: #e3c5c2 !important;
+}
+.delete-trip-in-editor:hover,
+.delete-day-button:hover { background: #fbf0ef !important; }
+.diary-edit-photo-list .edit-photo-row { grid-template-columns: 92px minmax(0, 1fr); }
+.diary-edit-photo-list .edit-photo-row > img { width: 92px; height: 92px; }
+.diary-edit-photo-list .edit-remove-photo { color: #a23d3d; border-color: #e3c5c2; }
+.gallery-heading { justify-content: flex-start; }
+.gallery-heading > span { font-size: 12px; letter-spacing: .015em; }
+@media (max-width: 600px) {
+  .diary-edit-photo-list .edit-photo-row { grid-template-columns: 68px minmax(0, 1fr); }
+  .diary-edit-photo-list .edit-photo-row > img { width: 68px; height: 68px; }
+}
+
+
+/* Latest typography/layout polish: captions stay flush with their photos. */
+.city-trip-info h3 {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0 0 5px;
+  color: #111;
+}
+.city-trip-info > p {
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #999;
+  margin: 0;
+}
+.trip-photo-item { gap: 0 !important; }
+.trip-photo-item .trip-photo-tile {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  text-align: left;
+}
+.trip-photo-tile .trip-photo-caption {
+  display: block;
+  padding: 10px 0 0 !important;
+  margin: 0;
+  color: #111;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.trip-photo-tile .trip-photo-date {
+  display: block;
+  padding: 4px 0 0 !important;
+  margin: 0;
+  color: #999;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.photo-gallery { align-items: start; }
+.photo-item { min-width: 0; display: flex; flex-direction: column; align-items: stretch; }
+.photo-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  text-align: left;
+}
+.photo-title {
+  padding: 10px 0 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: #111 !important;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.photo-date {
+  padding: 4px 0 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: #999;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+}
+.diary-selected-date {
+  width: 100%;
+  padding: 36px 0 20px;
+  color: #999;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .trip-photo-tile .trip-photo-caption,
+  .trip-photo-tile .trip-photo-date,
+  .photo-title,
+  .photo-date,
+  .diary-selected-date,
+  .city-trip-info h3,
+  .city-trip-info > p { font-size: 12px; }
+}
