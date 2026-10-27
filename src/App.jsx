@@ -997,7 +997,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
         translated_title: form.translated_title.trim() || null,
         info_heading: form.info_heading.trim() || 'Actor',
         info_content: form.info_content.trim() || null,
-        Synopsis_note: form.synopsis_note.trim() || null,
+        trailer_note: form.synopsis_note.trim() || null,
         poster_storage_path: storagePath,
         created_by: session.user.id,
       }).select('*').single();
@@ -1019,7 +1019,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
     const { data, error } = await supabase.from('archive_movies').update({
       title: form.title.trim() || 'Untitled film', translated_title: form.translated_title.trim() || null,
       info_heading: form.info_heading.trim() || 'Actor', info_content: form.info_content.trim() || null,
-      Synopsis_note: form.synopsis_note.trim() || null,
+      trailer_note: form.synopsis_note.trim() || null,
     }).eq('id', detailMovie.id).select('*').single();
     if (error) setError(error.message);
     else { setDetailMovie({ ...data, poster_url: detailMovie.poster_url }); setEditMode(''); await loadMovies(); }
@@ -1139,7 +1139,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
           {detailMovie.translated_title && <h2>{detailMovie.translated_title}</h2>}
           <div className="archive-film-meta">
             <section><h3>{detailMovie.info_heading || 'Actor'}</h3><p>{detailMovie.info_content || ''}</p></section>
-            <section><h3>Synopsis</h3><p>{detailMovie.synopsis_note || ''}</p></section>
+            <section><h3>Synopsis</h3><p>{detailMovie.trailer_note || ''}</p></section>
           </div>
         </header>
         <section className="archive-film-content">
