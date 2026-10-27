@@ -921,13 +921,25 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
   useEffect(() => {
     const open = () => {
       if (!isAdmin) return;
+
+      // Reuse the single star beside Archive in the main navigation.
+      // On a film detail page it opens that film's action menu; on the poster
+      // carousel it opens the upload-poster form.
+      if (detailMovie) {
+        setMenuOpen((value) => !value);
+        setEditMode('');
+        setModalOpen(false);
+        return;
+      }
+
+      setMenuOpen(false);
       setPosterFile(null);
       setForm({ title: '', translated_title: '', info_heading: 'Actor', info_content: '', trailer_note: '' });
       setModalOpen(true);
     };
     window.addEventListener('jewsworld-archive-star', open);
     return () => window.removeEventListener('jewsworld-archive-star', open);
-  }, [isAdmin]);
+  }, [isAdmin, detailMovie]);
 
   const move = (amount) => {
     if (!movies.length) return;
@@ -1093,8 +1105,6 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
       </section>}
 
       {detailMovie && <>
-        <button className="archive-back-button" type="button" onClick={() => { setDetailMovie(null); setMenuOpen(false); setEditMode(''); }}>← Archive</button>
-        <button type="button" className="archive-detail-star" onClick={() => setMenuOpen((value) => !value)} aria-label="Archive film options">★</button>
         {menuOpen && <div className="archive-action-menu">
           <button onClick={() => { setPosterFile(null); setEditMode('poster'); setMenuOpen(false); }}>Change Poster</button>
           <button onClick={() => { setForm(currentForm); setEditMode('information'); setMenuOpen(false); }}>Edit Information</button>
@@ -1117,7 +1127,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
           </article>)}
         </section>
         {movies.length > 1 && <nav className="archive-neighbor-nav" aria-label="Previous and next films">
-          {[-1, 1].map((direction) => { const index = (activeIndex + direction + movies.length) % movies.length; const movie = movies[index]; return <button key={direction} type="button" className={`archive-neighbor archive-neighbor-${direction < 0 ? 'prev' : 'next'}`} onClick={() => openMovie(movie, index)}><img src={movie.poster_url} alt={movie.title || 'Film poster'} /><span>{direction < 0 ? 'Previous film' : 'Next film'}</span></button>; })}
+          {[-1, 1].map((direction) => { const index = (activeIndex + direction + movies.length) % movies.length; const movie = movies[index]; return <button key={direction} type="button" className={`archive-neighbor archive-neighbor-${direction < 0 ? 'prev' : 'next'}`} onClick={() => openMovie(movie, index)} aria-label={direction < 0 ? 'Previous film' : 'Next film'}><img src={movie.poster_url} alt={movie.title || 'Film poster'} /></button>; })}
         </nav>}
       </>}
 
@@ -1137,7 +1147,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
           <label>Trailer note<textarea rows="3" value={form.trailer_note} onChange={(e) => setCurrentForm({ trailer_note: e.target.value })} /></label>
           <button className="archive-upload-submit" disabled={saving}>{saving ? 'saving…' : 'Save changes'}</button></form>}
         {editMode === 'poster' && <form onSubmit={changePoster} className="archive-editor-form"><h2>Change Poster</h2><label className="archive-upload-prompt">{posterFile ? posterFile.name : 'Choose a new poster'}<input type="file" accept="image/*" required onChange={(e) => setPosterFile(e.target.files?.[0] || null)} /></label><button className="archive-upload-submit" disabled={saving || !posterFile}>{saving ? 'saving…' : 'Change poster'}</button></form>}
-        {editMode === 'add-content' && <form onSubmit={saveItem} className="archive-editor-form"><h2>Add Photo &amp; Text</h2><label>Content type<select value={itemForm.type} onChange={(e) => setItemForm({ type: e.target.value, text: '' })}><option value="text">Text</option><option value="image">Photo</option></select></label>{itemForm.type === 'text' ? <label>Text<textarea rows="6" value={itemForm.text} onChange={(e) => setItemForm({ ...itemForm, text: e.target.value })} required /></label> : <label className="archive-upload-prompt">{itemFile ? itemFile.name : 'Choose a photo'}<input type="file" accept="image/*" required onChange={(e) => setItemFile(e.target.files?.[0] || null)} /></label>}<button className="archive-upload-submit" disabled={saving}>{saving ? 'saving…' : 'Add to film'}</button></form>}
+        {editMode === 'add-content' && <form onSubmit={saveItem} className="archive-editor-form"><h2>Add Photo &amp; Text</h2><label>Content type<select value={itemForm.type} onChange={(e) => setItemForm({ type: e.target.value, text: '' })}><option value="text">Text</option><option value="image">Photo</option></select></label>{itemForm.type === 'text' ? <label>Text<textarea className="archive-content-text-input" rows="6" value={itemForm.text} onChange={(e) => setItemForm({ ...itemForm, text: e.target.value })} required /></label> : <label className="archive-upload-prompt">{itemFile ? itemFile.name : 'Choose a photo'}<input type="file" accept="image/*" required onChange={(e) => setItemFile(e.target.files?.[0] || null)} /></label>}<button className="archive-upload-submit" disabled={saving}>{saving ? 'saving…' : 'Add to film'}</button></form>}
         {editMode === 'manage-content' && <div className="archive-editor-form"><h2>Manage Content</h2>{items.length === 0 && <p>No content yet.</p>}{items.map((item, index) => <div className="archive-manage-row" key={item.id}><span>{index + 1}. {item.item_type === 'image' ? 'Photo' : (item.content || '').slice(0, 55) || 'Text'}</span><div><button disabled={index === 0} onClick={() => shiftItem(index, -1)}>↑</button><button disabled={index === items.length - 1} onClick={() => shiftItem(index, 1)}>↓</button><button onClick={() => deleteItem(item)}>×</button></div></div>)}<button className="archive-upload-submit" onClick={() => { setEditMode('add-content'); setItemForm({ type: 'text', text: '' }); }}>Add content</button></div>}
       </section></div>}
     </main>
