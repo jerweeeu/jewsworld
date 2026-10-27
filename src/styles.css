@@ -1124,3 +1124,135 @@ input:focus-visible {
 .travel-photo-reorder { display: flex; gap: 4px; padding-bottom: 1px; }
 .travel-photo-reorder button { width: 30px; height: 34px; border: 1px solid #ddd; background: #fff; font-size: 13px; }
 .travel-photo-reorder button:disabled { opacity: .3; cursor: default; }
+
+
+/* Clean travel archive: city cards instead of the 3D globe */
+.map-page {
+  min-height: calc(100vh - 58px);
+  background: #fff;
+  color: #111;
+  padding: 76px clamp(16px, 4vw, 58px) 48px;
+  overflow: visible;
+}
+.map-topline-clean {
+  position: relative;
+  z-index: 12;
+  min-height: 44px;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+.map-star-button {
+  position: relative;
+  z-index: 13;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid #d7d7d7;
+  background: #fff;
+  color: #111;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.map-star-button:hover { background: #f2f2f2; transform: rotate(12deg); }
+.travel-city-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 34px 18px;
+  width: 100%;
+  max-width: 1450px;
+  margin: 0 auto;
+}
+.travel-city-card {
+  position: relative;
+  display: block;
+  min-width: 0;
+  padding: 0 0 14px;
+  border: 0;
+  border-bottom: 1px solid #dedede;
+  background: transparent;
+  text-align: left;
+  color: #111;
+}
+.travel-city-image {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #f1f1ef;
+}
+.travel-city-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .35s ease;
+}
+.travel-city-card:hover .travel-city-image img { transform: scale(1.035); }
+.travel-city-image-placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: #c4c4c4;
+  font-size: clamp(48px, 8vw, 100px);
+  font-weight: 300;
+}
+.travel-city-count {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  font-size: 11px;
+}
+.travel-city-card-info {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+}
+.travel-city-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(15px, 1.7vw, 22px);
+  font-weight: 500;
+  letter-spacing: -.035em;
+}
+.travel-city-meta {
+  flex: 0 0 auto;
+  color: #888;
+  font-size: 9px;
+  letter-spacing: .12em;
+}
+.travel-city-arrow {
+  display: block;
+  margin-top: 6px;
+  color: #888;
+  font-size: 13px;
+  text-align: right;
+}
+@media (max-width: 900px) {
+  .travel-city-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 12px; }
+}
+@media (max-width: 520px) {
+  .map-page { padding: 68px 12px 32px; }
+  .map-topline-clean { margin-bottom: 8px; }
+  .travel-city-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 9px; }
+  .travel-city-card { padding-bottom: 10px; }
+  .travel-city-count { right: 7px; bottom: 7px; width: 31px; height: 31px; font-size: 10px; }
+  .travel-city-card-info { display: block; padding-top: 9px; }
+  .travel-city-name { display: block; font-size: 15px; }
+  .travel-city-meta { display: block; margin-top: 5px; font-size: 8px; }
+}
