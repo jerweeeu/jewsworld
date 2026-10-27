@@ -22,10 +22,13 @@ function DateWheel({
   value,
   values,
   onChange,
+  onOpenCurrent,
   pad = false,
 }) {
   const wheelRef = useRef(null);
   const timerRef = useRef(null);
+  const wheelTimerRef = useRef(null);
+  const wheelCooldownRef = useRef(false);
   const ROW_HEIGHT = 48;
 
   // Keep the selected number aligned in the visible row.
@@ -71,10 +74,21 @@ function DateWheel({
 
   function handleWheel(event) {
     event.preventDefault();
-
-    if (wheelRef.current) {
-      wheelRef.current.scrollTop += event.deltaY;
+    if (!wheelRef.current) return;
+    if (wheelCooldownRef.current) {
+      window.clearTimeout(wheelTimerRef.current);
+      wheelTimerRef.current = window.setTimeout(() => { wheelCooldownRef.current = false; }, 260);
+      return;
     }
+    wheelCooldownRef.current = true;
+    const currentIndex = values.indexOf(Number(value));
+    const direction = event.deltaY > 0 ? 1 : -1;
+    const nextIndex = Math.max(0, Math.min(values.length - 1, currentIndex + direction));
+    if (nextIndex !== currentIndex) {
+      onChange(values[nextIndex]);
+      wheelRef.current.scrollTo({ top: nextIndex * ROW_HEIGHT, behavior: 'auto' });
+    }
+    wheelTimerRef.current = window.setTimeout(() => { wheelCooldownRef.current = false; }, 260);
   }
 
   function handleKeyDown(event) {
@@ -124,15 +138,14 @@ function DateWheel({
               item === value ? 'is-selected' : ''
             }`}
             onClick={() => {
+              if (item === Number(value)) {
+                onOpenCurrent?.();
+                return;
+              }
               onChange(item);
-
               const index = values.indexOf(item);
-
               if (wheelRef.current) {
-                wheelRef.current.scrollTo({
-                  top: index * ROW_HEIGHT,
-                  behavior: 'smooth',
-                });
+                wheelRef.current.scrollTo({ top: index * ROW_HEIGHT, behavior: 'auto' });
               }
             }}
             aria-pressed={item === value}
@@ -720,17 +733,6 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
             <h1>{activeTrip.title}</h1>
             <p>{formatDateRange(activeTrip.start_date, activeTrip.end_date)}</p>
           </div>
-          {isAdmin && (
-            <button
-              className="travel-delete-button"
-              type="button"
-              onClick={async () => {
-                const confirmed = window.confirm(`Delete “${activeTrip.title}” and all of its photos? This cannot be undone.`);
-                if (!confirmed) return;
-                await deleteTravelRecord(activeTrip);
-              }}
-            >delete trip</button>
-          )}
         </header>
         {activeTrip.description && <p className="trip-description">{activeTrip.description}</p>}
         <section className="trip-photo-grid">
@@ -738,9 +740,8 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
             <article className="trip-photo-item" key={photo.id}>
               <button className="trip-photo-tile" type="button" onClick={() => setTripLightbox(index)} aria-label={`Open photo ${index + 1}`}>
                 <img src={photo.url} alt={photo.title || activeTrip.title} loading="lazy" />
-                {photo.title && <span>{photo.title}</span>}
+                <span className="trip-photo-caption">{photo.title || ''}</span><span className="trip-photo-date">{formatTripDate(activeTrip.start_date)}</span>
               </button>
-              {isAdmin && <button className="travel-delete-button photo-delete-button" type="button" onClick={() => deleteTravelPhoto(activeTrip, photo)}>delete photo</button>}
             </article>
           ))}
         </section>
@@ -761,7 +762,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
                 </div>
                 <label>Add more photos<input type="file" accept="image/*" multiple onChange={(event) => { const files = Array.from(event.target.files || []); setEditNewFiles(files); setEditNewTitles(files.map(() => '')); }} /></label>
                 {editNewFiles.length > 0 && <div className="edit-new-photo-list">{editNewFiles.map((file, index) => <label key={`${file.name}-${index}`}>New photo {index + 1} · {file.name}<input value={editNewTitles[index] || ''} onChange={(event) => setEditNewTitles((old) => old.map((value, i) => i === index ? event.target.value : value))} placeholder="optional subtitle" /></label>)}</div>}
-                <div className="edit-trip-footer"><button className="travel-publish-button" type="submit" disabled={editTripSaving}>{editTripSaving ? 'saving…' : 'save changes'}</button><button className="edit-cancel-button" type="button" onClick={() => setEditTripOpen(false)} disabled={editTripSaving}>cancel</button></div>
+                <div className="edit-trip-footer"><button className="travel-publish-button" type="submit" disabled={editTripSaving}>{editTripSaving ? 'saving…' : 'save changes'}</button><button className="edit-cancel-button" type="button" onClick={() => setEditTripOpen(false)} disabled={editTripSaving}>cancel</button><button className="edit-cancel-button delete-trip-in-editor" type="button" disabled={editTripSaving} onClick={async () => { const active = trips.find((trip) => trip.id === selectedTrip.id) || selectedTrip; if (!window.confirm(`Delete “${active.title}” and all of its photos? This cannot be undone.`)) return; const deleted = await deleteTravelRecord(active); if (deleted) setEditTripOpen(false); }}>delete this trip</button></div>
               </form>
             </section>
           </div>
@@ -809,7 +810,6 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
           <section className="city-panel" role="dialog" aria-modal="true" aria-label={`${selectedCity.city_display_name} travel records`}>
             <div className="city-panel-heading">
               <h2>{selectedCity.city_display_name}</h2>
-              {isAdmin && <button className="travel-delete-button" type="button" disabled={saving} onClick={() => deleteCity(selectedCity)}>delete city</button>}
             </div>
             <div className="city-trip-list">
               {selectedCityTrips.map((trip) => (
@@ -822,15 +822,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
                     <p>{formatDateRange(trip.start_date, trip.end_date)}</p>
                     <div className="city-trip-actions">
                       <button className="view-more-button" onClick={() => { setSelectedTrip(trip); setSelectedCity(null); }}>view more</button>
-                      {isAdmin && <button className="travel-delete-button" type="button" onClick={async () => {
-                        const confirmed = window.confirm(`Delete “${trip.title}” and all of its photos? This cannot be undone.`);
-                        if (!confirmed) return;
-                        const deleted = await deleteTravelRecord(trip);
-                        if (deleted) {
-                          const stillHasCityTrips = trips.some((item) => item.id !== trip.id && item.city_name.trim().toLowerCase() === selectedCity.key);
-                          if (!stillHasCityTrips) setSelectedCity(null);
-                        }
-                      }}>delete trip</button>}
+
                     </div>
                   </div>
                 </article>
@@ -892,9 +884,12 @@ function App() {
 
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [diaryFormOpen, setDiaryFormOpen] = useState(false);
+  const [diaryFormMode, setDiaryFormMode] = useState('add');
   const [diaryFormDate, setDiaryFormDate] = useState(dateKey(today.getFullYear(), today.getMonth() + 1, today.getDate()));
   const [diaryFormFile, setDiaryFormFile] = useState(null);
   const [diaryFormCaption, setDiaryFormCaption] = useState('');
+  const [modifyDiaryFile, setModifyDiaryFile] = useState(null);
+  const [modifyDiaryCaption, setModifyDiaryCaption] = useState('');
   const [diaryFormSaving, setDiaryFormSaving] = useState(false);
 
   const selectedDate = dateKey(year, month, day);
@@ -1030,6 +1025,10 @@ function App() {
         ),
     [posts, selectedDate]
   );
+
+  const [modifyDiaryItems, setModifyDiaryItems] = useState([]);
+  const diaryEditorItems = useMemo(() => posts.filter((post) => post.entry_date === diaryFormDate).flatMap((post) => (post.photos || []).map((photo) => ({ postId: post.id, photoId: photo.id, storagePath: photo.storage_path, url: photo.url, caption: post.title || photo.caption || '', editCaption: post.title || photo.caption || '', postPhotoCount: (post.photos || []).length }))), [posts, diaryFormDate]);
+  useEffect(() => { if (diaryFormOpen && diaryFormMode === 'modify') setModifyDiaryItems(diaryEditorItems); }, [diaryFormOpen, diaryFormMode, diaryEditorItems]);
 
   /* Photo viewer keyboard navigation. */
 
@@ -1237,6 +1236,78 @@ function App() {
     }
   }
 
+  function openDiaryModal(mode) {
+    if (!isAdmin) return;
+    const date = selectedDate;
+    setDiaryFormDate(date);
+    setDiaryFormMode(mode);
+    setDiaryFormFile(null);
+    setDiaryFormCaption('');
+    setModifyDiaryFile(null);
+    setModifyDiaryCaption('');
+    setDiaryFormOpen(true);
+    setError('');
+  }
+
+  async function saveDiaryModifications(event) {
+    event.preventDefault();
+    if (!isAdmin || !supabase || !session) {
+      setError('Admin access is required to edit diary entries.');
+      return;
+    }
+    setDiaryFormSaving(true);
+    setError('');
+    let uploadedPath = null;
+    let createdPostId = null;
+    try {
+      // Existing item edits are tracked by the editable rows rendered below.
+      for (const item of modifyDiaryItems) {
+        const nextCaption = String(item.editCaption ?? '').trim();
+        const { error: postUpdateError } = await supabase.from('diary_posts').update({ title: nextCaption }).eq('id', item.postId);
+        if (postUpdateError) throw postUpdateError;
+        const { error: photoUpdateError } = await supabase.from('post_photos').update({ caption: nextCaption }).eq('id', item.photoId);
+        if (photoUpdateError) throw photoUpdateError;
+      }
+
+      if (modifyDiaryFile) {
+        if (!modifyDiaryCaption.trim()) throw new Error('Please enter a subtitle for the new photo.');
+        const { data: post, error: postError } = await supabase.from('diary_posts').insert({ title: modifyDiaryCaption.trim(), body: '', entry_date: diaryFormDate, status: 'published', author_id: session.user.id }).select('id').single();
+        if (postError) throw postError;
+        createdPostId = post.id;
+        const extension = modifyDiaryFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+        uploadedPath = `${post.id}/${crypto.randomUUID()}.${extension}`;
+        const { error: storageError } = await supabase.storage.from('public-post-photos').upload(uploadedPath, modifyDiaryFile, { upsert: false, contentType: modifyDiaryFile.type || 'image/jpeg' });
+        if (storageError) throw storageError;
+        const { error: photoError } = await supabase.from('post_photos').insert({ post_id: post.id, storage_path: uploadedPath, caption: modifyDiaryCaption.trim() });
+        if (photoError) throw photoError;
+      }
+      await loadPosts();
+      setDiaryFormOpen(false);
+      setModifyDiaryFile(null);
+      setModifyDiaryCaption('');
+    } catch (saveError) {
+      setError(getErrorMessage(saveError));
+      if (uploadedPath) await supabase.storage.from('public-post-photos').remove([uploadedPath]);
+      if (createdPostId) await supabase.from('diary_posts').delete().eq('id', createdPostId);
+    } finally {
+      setDiaryFormSaving(false);
+    }
+  }
+
+  async function deleteDiaryPhotoItem(item) {
+    if (!isAdmin || !supabase) return;
+    if (!window.confirm('Delete this photo and its diary entry? This cannot be undone.')) return;
+    const { error: photoError } = await supabase.from('post_photos').delete().eq('id', item.photoId);
+    if (photoError) { setError(getErrorMessage(photoError)); return; }
+    if (item.postPhotoCount <= 1) {
+      const { error: postError } = await supabase.from('diary_posts').delete().eq('id', item.postId);
+      if (postError) { setError(getErrorMessage(postError)); return; }
+    }
+    const { error: storageError } = await supabase.storage.from('public-post-photos').remove([item.storagePath]);
+    if (storageError) console.error('Diary photo storage cleanup failed:', storageError);
+    await loadPosts();
+  }
+
   async function deleteDiaryPost(post, { confirm = true, refresh = true } = {}) {
     if (!supabase || !isAdmin) {
       setError('Admin access is required to delete diary entries.');
@@ -1323,9 +1394,7 @@ function App() {
             if (navPage === 'map') {
               window.dispatchEvent(new Event('jewsworld-map-star'));
             } else if (navPage === 'diary') {
-              setDiaryFormDate(selectedDate);
-              setDiaryFormOpen(true);
-              loadPosts();
+              openDiaryModal(page === 'gallery' ? 'modify' : 'add');
             }
           };
           return (
@@ -1385,6 +1454,7 @@ function App() {
                 value={year}
                 values={yearValues}
                 onChange={changeYear}
+                onOpenCurrent={() => { setLightboxIndex(null); setPage('gallery'); loadPosts(); }}
               />
 
               <div className="month-column">
@@ -1393,6 +1463,7 @@ function App() {
                   value={month}
                   values={monthValues}
                   onChange={changeMonth}
+                  onOpenCurrent={() => { setLightboxIndex(null); setPage('gallery'); loadPosts(); }}
                   pad
                 />
               </div>
@@ -1402,10 +1473,10 @@ function App() {
                 value={day}
                 values={dayValues}
                 onChange={setDay}
+                onOpenCurrent={() => { setLightboxIndex(null); setPage('gallery'); loadPosts(); }}
                 pad
               />
             </div>
-            <button type="button" className="view-day-button" onClick={() => { setLightboxIndex(null); setPage('gallery'); loadPosts(); }}>view day</button>
           </section>
         </main>
       )}
@@ -1413,60 +1484,6 @@ function App() {
       {/* Gallery */}
       {page === 'gallery' && (
         <main className="gallery-page">
-          <div className="gallery-heading">
-            <button
-              className="back-link"
-              onClick={() => {
-                setLightboxIndex(null);
-                setPage('diary');
-              }}
-            >
-              ← diary
-            </button>
-
-            <span>{selectedDate.replaceAll('-', ' ')}</span>
-          </div>
-
-          {isAdmin && (
-            <form className="upload-form" onSubmit={uploadPhoto}>
-              <label className="file-label">
-                <span>
-                  {uploadFile
-                    ? uploadFile.name
-                    : 'choose photo'}
-                </span>
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) =>
-                    setUploadFile(event.target.files?.[0] || null)
-                  }
-                />
-              </label>
-
-              <input
-                className="caption-input"
-                type="text"
-                maxLength={120}
-                value={caption}
-                onChange={(event) =>
-                  setCaption(event.target.value)
-                }
-                placeholder="one-line title"
-                aria-label="Photo title"
-                required
-              />
-
-              <button
-                className="plain-button"
-                type="submit"
-                disabled={uploading}
-              >
-                {uploading ? 'uploading…' : 'upload'}
-              </button>
-            </form>
-          )}
 
           {error && (
             <p className="error-message" role="alert">
@@ -1476,10 +1493,6 @@ function App() {
 
           {busy && (
             <p className="subtle-message">loading</p>
-          )}
-
-          {!busy && galleryItems.length === 0 && (
-            <p className="subtle-message">nothing here yet</p>
           )}
 
           <section className="photo-gallery" aria-label="Photos">
@@ -1503,25 +1516,14 @@ function App() {
                   />
                 </button>
 
-                {item.title && (
-                  <p className="photo-title">{item.title}</p>
-                )}
+                <p className="photo-title">{item.title || ''}</p>
+                <p className="photo-date">{selectedDate.replaceAll('-', ' ')}</p>
 
-                {isAdmin && (
-                  <button
-                    className="delete-link"
-                    type="button"
-                    onClick={async () => {
-                      const deleted = await deleteDiaryPost(item.post);
-                      if (deleted) setLightboxIndex(null);
-                    }}
-                  >
-                    delete
-                  </button>
-                )}
               </article>
             ))}
           </section>
+
+          <footer className="diary-selected-date">{selectedDate.replaceAll('-', ' ')}</footer>
 
           {lightboxIndex !== null &&
             galleryItems[lightboxIndex] && (
@@ -1620,17 +1622,41 @@ function App() {
 
       {diaryFormOpen && isAdmin && (
         <div className="city-panel-shade form-shade" onClick={(event) => { if (event.target === event.currentTarget && !diaryFormSaving) setDiaryFormOpen(false); }}>
-          <section className="travel-form-panel diary-form-panel" role="dialog" aria-modal="true" aria-label="Add diary entry">
-            <p className="edit-panel-kicker">ADMIN · NEW MEMORY</p>
-            <h2>add a diary entry</h2>
+          <section className="travel-form-panel diary-form-panel" role="dialog" aria-modal="true" aria-label={diaryFormMode === 'add' ? 'Add diary entry' : 'Modify this day'}>
+            <p className="edit-panel-kicker">ADMIN · {diaryFormMode === 'add' ? 'NEW MEMORY' : 'EDIT MEMORY'}</p>
+            <h2>{diaryFormMode === 'add' ? 'add a diary entry' : 'modify this day'}</h2>
             {error && <p className="error-message" role="alert">{error}</p>}
-            <form className="travel-form" onSubmit={uploadDiaryEntry}>
+            <form className="travel-form" onSubmit={diaryFormMode === 'add' ? uploadDiaryEntry : saveDiaryModifications}>
               <label>Date<input type="date" value={diaryFormDate} onChange={(event) => setDiaryFormDate(event.target.value)} required /></label>
-              <label>Choose a photo<input type="file" accept="image/*" onChange={(event) => setDiaryFormFile(event.target.files?.[0] || null)} required /></label>
-              {diaryFormFile && <p className="selected-file-name">{diaryFormFile.name}</p>}
-              <label>Subtitle<input type="text" maxLength={120} value={diaryFormCaption} onChange={(event) => setDiaryFormCaption(event.target.value)} placeholder="A little memory…" required /></label>
-              <button className="travel-publish-button" type="submit" disabled={diaryFormSaving}>{diaryFormSaving ? 'saving…' : 'save diary entry'}</button>
-              <button className="edit-cancel-button" type="button" onClick={deleteDiaryDate} disabled={diaryFormSaving}>delete all entries for this date</button>
+              {diaryFormMode === 'add' ? (
+                <>
+                  <label>Photo<input type="file" accept="image/*" onChange={(event) => setDiaryFormFile(event.target.files?.[0] || null)} required /></label>
+                  {diaryFormFile && <p className="selected-file-name">{diaryFormFile.name}</p>}
+                  <label>Subtitle<input type="text" maxLength={120} value={diaryFormCaption} onChange={(event) => setDiaryFormCaption(event.target.value)} placeholder="A little memory…" required /></label>
+                  <button className="travel-publish-button" type="submit" disabled={diaryFormSaving}>{diaryFormSaving ? 'saving…' : 'save diary entry'}</button>
+                </>
+              ) : (
+                <>
+                  <div className="edit-photo-list diary-edit-photo-list">
+                    <p className="edit-section-label">Photos for {diaryFormDate}</p>
+                    {modifyDiaryItems.length === 0 && <p className="subtle-message">No photos for this day yet.</p>}
+                    {modifyDiaryItems.map((item) => (
+                      <div className="edit-photo-row" key={item.photoId}>
+                        <img src={item.url} alt={item.editCaption || 'Diary photo'} />
+                        <div className="edit-photo-fields">
+                          <label>Subtitle<input value={item.editCaption} maxLength={120} onChange={(event) => setModifyDiaryItems((old) => old.map((row) => row.photoId === item.photoId ? { ...row, editCaption: event.target.value } : row))} placeholder="A little memory…" /></label>
+                          <div className="edit-photo-actions"><button type="button" className="edit-remove-photo" onClick={() => deleteDiaryPhotoItem(item)}>delete photo</button></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <label>Add a photo<input type="file" accept="image/*" onChange={(event) => setModifyDiaryFile(event.target.files?.[0] || null)} /></label>
+                  {modifyDiaryFile && <p className="selected-file-name">{modifyDiaryFile.name}</p>}
+                  {modifyDiaryFile && <label>New photo subtitle<input type="text" maxLength={120} value={modifyDiaryCaption} onChange={(event) => setModifyDiaryCaption(event.target.value)} placeholder="A little memory…" required /></label>}
+                  <button className="travel-publish-button" type="submit" disabled={diaryFormSaving}>{diaryFormSaving ? 'saving…' : 'save changes'}</button>
+                  <button className="edit-cancel-button delete-day-button" type="button" onClick={deleteDiaryDate} disabled={diaryFormSaving}>delete all entries for this date</button>
+                </>
+              )}
               <button className="edit-cancel-button" type="button" onClick={() => setDiaryFormOpen(false)} disabled={diaryFormSaving}>cancel</button>
             </form>
           </section>
