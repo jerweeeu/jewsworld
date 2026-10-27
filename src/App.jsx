@@ -7,6 +7,14 @@ const today = new Date();
 const dateKey = (year, month, day) =>
   `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
+const formatDisplayDate = (dateString) => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  const monthName = new Date(year, month - 1, 1)
+    .toLocaleString('en-US', { month: 'short' })
+    .toUpperCase();
+  return `${day} ${monthName}, ${year}`;
+};
+
 const daysInMonth = (year, month) =>
   new Date(year, month, 0).getDate();
 
@@ -1517,13 +1525,12 @@ function App() {
                 </button>
 
                 <p className="photo-title">{item.title || ''}</p>
-                <p className="photo-date">{selectedDate.replaceAll('-', ' ')}</p>
 
               </article>
             ))}
           </section>
 
-          <footer className="diary-selected-date">{selectedDate.replaceAll('-', ' ')}</footer>
+          <footer className="diary-selected-date">{formatDisplayDate(selectedDate)}</footer>
 
           {lightboxIndex !== null &&
             galleryItems[lightboxIndex] && (
