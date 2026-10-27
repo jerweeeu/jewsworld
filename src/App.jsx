@@ -867,6 +867,145 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
 }
 
 /* ========================================
+   Archive / film poster carousel
+======================================== */
+function ArchivePage({ supabase, isAdmin, session, setError }) {
+  const [movies, setMovies] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [posterFile, setPosterFile] = useState(null);
+  const [form, setForm] = useState({ title: '', release_year: '', rating: '', thoughts: '' });
+  const [detailMovie, setDetailMovie] = useState(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const startX = useRef(null);
+
+  async function loadMovies() {
+    if (!supabase) { setLoading(false); return; }
+    setLoading(true);
+    const { data, error } = await supabase.from('archive_movies').select('*').order('created_at', { ascending: true });
+    if (error) setError(error.message);
+    else {
+      const rows = (data || []).map((movie) => ({
+        ...movie,
+        poster_url: movie.poster_storage_path
+          ? supabase.storage.from('movie-posters').getPublicUrl(movie.poster_storage_path).data.publicUrl
+          : movie.poster_url,
+      }));
+      setMovies(rows);
+      setActiveIndex((current) => Math.min(current, Math.max(0, rows.length - 1)));
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => { loadMovies(); }, [supabase]);
+  useEffect(() => {
+    const open = () => {
+      if (!isAdmin) return;
+      setPosterFile(null);
+      setForm({ title: '', release_year: '', rating: '', thoughts: '' });
+      setModalOpen(true);
+    };
+    window.addEventListener('jewsworld-archive-star', open);
+    return () => window.removeEventListener('jewsworld-archive-star', open);
+  }, [isAdmin]);
+
+  const move = (amount) => {
+    if (!movies.length) return;
+    setActiveIndex((current) => (current + amount + movies.length) % movies.length);
+    setTilt({ x: 0, y: 0 });
+  };
+
+  function handlePointerMove(event) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width;
+    const y = (event.clientY - rect.top) / rect.height;
+    setTilt({ x: (0.5 - y) * 7, y: (x - 0.5) * 10 });
+  }
+
+  async function saveMovie(event) {
+    event.preventDefault();
+    if (!supabase || !session || !isAdmin) { setError('Please log in as administrator to add a movie.'); return; }
+    if (!posterFile) { setError('Please choose a movie poster.'); return; }
+    setSaving(true);
+    let storagePath = '';
+    try {
+      const extension = posterFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+      storagePath = `${session.user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from('movie-posters').upload(storagePath, posterFile, { upsert: false, contentType: posterFile.type || 'image/jpeg' });
+      if (uploadError) throw uploadError;
+      const { error: insertError } = await supabase.from('archive_movies').insert({
+        title: form.title.trim() || null,
+        release_year: form.release_year ? Number(form.release_year) : null,
+        rating: form.rating ? Number(form.rating) : null,
+        thoughts: form.thoughts.trim() || null,
+        poster_storage_path: storagePath,
+        created_by: session.user.id,
+      });
+      if (insertError) throw insertError;
+      setModalOpen(false);
+      await loadMovies();
+      setActiveIndex(Math.max(0, movies.length));
+    } catch (error) {
+      setError(error.message || 'Could not save this movie.');
+      if (storagePath) await supabase.storage.from('movie-posters').remove([storagePath]);
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <main className="archive-page" onKeyDown={(event) => { if (event.key === 'ArrowLeft') move(-1); if (event.key === 'ArrowRight') move(1); }} tabIndex={0}>
+      <section className="archive-carousel" aria-label="Movie poster carousel"
+        onWheel={(event) => { if (Math.abs(event.deltaX) > 8 || Math.abs(event.deltaY) > 18) { event.preventDefault(); move((event.deltaX || event.deltaY) > 0 ? 1 : -1); } }}>
+        {loading ? null : movies.length === 0 ? null : movies.map((movie, index) => {
+          let offset = index - activeIndex;
+          if (offset > movies.length / 2) offset -= movies.length;
+          if (offset < -movies.length / 2) offset += movies.length;
+          if (Math.abs(offset) > 2) return null;
+          const isActive = offset === 0;
+          return (
+            <button type="button" key={movie.id} className={`archive-poster-card ${isActive ? 'is-current' : ''}`}
+              style={{ '--poster-offset': offset, '--poster-depth': Math.abs(offset), '--pointer-rotate-x': isActive ? `${tilt.x}deg` : '0deg', '--pointer-rotate-y': isActive ? `${tilt.y}deg` : `${offset * -18}deg` }}
+              onMouseMove={isActive ? handlePointerMove : undefined} onMouseLeave={() => setTilt({ x: 0, y: 0 })}
+              onTouchStart={(event) => { startX.current = event.touches[0]?.clientX ?? null; }}
+              onTouchEnd={(event) => { const endX = event.changedTouches[0]?.clientX; if (startX.current != null && endX != null && Math.abs(endX - startX.current) > 35) move(endX < startX.current ? 1 : -1); startX.current = null; }}
+              onClick={() => { if (!isActive) setActiveIndex(index); else setDetailMovie(movie); }} aria-label={movie.title || 'Movie poster'}>
+              <img src={movie.poster_url} alt={movie.title || 'Movie poster'} draggable="false" />
+            </button>
+          );
+        })}
+      </section>
+
+      {modalOpen && <div className="modal-shade" onMouseDown={(event) => { if (event.target === event.currentTarget) setModalOpen(false); }}>
+        <section className="archive-form-panel archive-upload-only" aria-label="Upload poster">
+          <button type="button" className="modal-close" onClick={() => setModalOpen(false)} aria-label="Close">×</button>
+          <form onSubmit={saveMovie}>
+            <label className="archive-upload-prompt">
+              {posterFile ? posterFile.name : 'Upload poster'}
+              <input type="file" accept="image/*" required onChange={(event) => setPosterFile(event.target.files?.[0] || null)} />
+            </label>
+            <button className="archive-upload-submit" type="submit" disabled={saving || !posterFile}>{saving ? 'uploading…' : 'Upload poster'}</button>
+          </form>
+        </section>
+      </div>}
+
+      {detailMovie && <div className="modal-shade archive-detail-shade" onMouseDown={(event) => { if (event.target === event.currentTarget) setDetailMovie(null); }}>
+        <section className="archive-detail-panel" aria-label="Movie details">
+          <button type="button" className="modal-close" onClick={() => setDetailMovie(null)} aria-label="Close">×</button>
+          <img src={detailMovie.poster_url} alt={detailMovie.title || 'Movie poster'} />
+          <div className="archive-detail-copy">
+            {detailMovie.title && <h2>{detailMovie.title}</h2>}
+            {detailMovie.release_year && <p>{detailMovie.release_year}</p>}
+            {detailMovie.rating != null && <p className="archive-detail-rating">{detailMovie.rating} / 10</p>}
+            {detailMovie.thoughts && <p className="archive-thoughts">{detailMovie.thoughts}</p>}
+          </div>
+        </section>
+      </div>}
+    </main>
+  );
+}
+
+/* ========================================
    Main website
 ======================================== */
 
@@ -1388,7 +1527,7 @@ function App() {
   return (
     <div className="site-shell">
       <header className="site-header">
-        {['home', 'map', 'diary', 'about'].map((navPage) => {
+        {['home', 'map', 'archive', 'diary', 'about'].map((navPage) => {
           const activeNavPage = page === 'gallery' ? 'diary' : page;
           const active = activeNavPage === navPage;
           const starAction = () => {
@@ -1401,6 +1540,8 @@ function App() {
             if (!isAdmin) return;
             if (navPage === 'map') {
               window.dispatchEvent(new Event('jewsworld-map-star'));
+            } else if (navPage === 'archive') {
+              window.dispatchEvent(new Event('jewsworld-archive-star'));
             } else if (navPage === 'diary') {
               openDiaryModal(page === 'gallery' ? 'modify' : 'add');
             }
@@ -1411,7 +1552,7 @@ function App() {
                 if (navPage === 'map') { setPage('map'); setMapViewKey((key) => key + 1); }
                 else setPage(navPage);
               }}>{navPage}</button>
-              {active && <button type="button" className="map-star-button nav-star-button" onClick={starAction} aria-label={`${navPage} options`} title={navPage === 'about' ? (isAdmin ? 'Log out' : 'Log in') : navPage === 'map' ? 'Add or modify a trip' : navPage === 'diary' ? 'Add or manage a diary entry' : 'Home'}>★</button>}
+              {active && <button type="button" className="map-star-button nav-star-button" onClick={starAction} aria-label={`${navPage} options`} title={navPage === 'about' ? (isAdmin ? 'Log out' : 'Log in') : navPage === 'map' ? 'Add or modify a trip' : navPage === 'archive' ? 'Add a movie' : navPage === 'diary' ? 'Add or manage a diary entry' : 'Home'}>★</button>}
             </div>
           );
         })}
@@ -1448,6 +1589,9 @@ function App() {
           {error && <div className="map-global-error" role="alert">{error}<button onClick={() => setError('')} aria-label="Dismiss error">×</button></div>}
         </>
       )}
+
+      {/* Archive */}
+      {page === 'archive' && <ArchivePage supabase={supabase} isAdmin={isAdmin} session={session} setError={setError} />}
 
       {/* Diary */}
       {page === 'diary' && (
