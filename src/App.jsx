@@ -459,7 +459,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
           city_display_name: form.city_display_name.trim() || form.city_name.trim().toUpperCase(),
           latitude: lat,
           longitude: lng,
-          title: form.title.trim(),o
+          title: form.title.trim(),
           start_date: form.start_date,
           end_date: form.end_date,
           description: form.description.trim() || null,
