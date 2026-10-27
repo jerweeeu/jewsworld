@@ -482,7 +482,6 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
         </section>
         {tripLightbox !== null && activeTrip.photos[tripLightbox] && (
           <div className="trip-lightbox" role="dialog" aria-modal="true" onClick={(event) => { if (event.target === event.currentTarget) setTripLightbox(null); }}>
-            <button className="trip-lightbox-close" onClick={() => setTripLightbox(null)} aria-label="Close">×</button>
             {activeTrip.photos.length > 1 && <button className="trip-lightbox-arrow left" onClick={() => setTripLightbox((tripLightbox - 1 + activeTrip.photos.length) % activeTrip.photos.length)} aria-label="Previous photo">‹</button>}
             <img src={activeTrip.photos[tripLightbox].url} alt={activeTrip.photos[tripLightbox].title || activeTrip.title} />
             {activeTrip.photos.length > 1 && <button className="trip-lightbox-arrow right" onClick={() => setTripLightbox((tripLightbox + 1) % activeTrip.photos.length)} aria-label="Next photo">›</button>}
@@ -533,7 +532,6 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
       {selectedCity && (
         <div className="city-panel-shade" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedCity(null); }}>
           <section className="city-panel" role="dialog" aria-modal="true" aria-label={`${selectedCity.city_display_name} travel records`}>
-            <button className="city-panel-close" onClick={() => setSelectedCity(null)} aria-label="Close city panel">×</button>
             <h2>{selectedCity.city_display_name}</h2>
             <div className="city-trip-list">
               {selectedCityTrips.map((trip) => (
@@ -544,7 +542,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
                   <div className="city-trip-info">
                     <h3>{trip.title}</h3>
                     <p>{formatDateRange(trip.start_date, trip.end_date)}</p>
-                    <button className="view-more-button" onClick={() => { setSelectedTrip(trip); setSelectedCity(null); }}>view more <span>↗</span></button>
+                    <button className="view-more-button" onClick={() => { setSelectedTrip(trip); setSelectedCity(null); }}>view more</button>
                   </div>
                 </article>
               ))}
@@ -555,7 +553,6 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
       {formOpen && (
         <div className="city-panel-shade form-shade" onMouseDown={(event) => { if (event.target === event.currentTarget && !saving) setFormOpen(false); }}>
           <section className="travel-form-panel" role="dialog" aria-modal="true" aria-label="Add travel record">
-            <button className="city-panel-close" onClick={() => setFormOpen(false)} disabled={saving} aria-label="Close form">×</button>
             <p className="city-panel-kicker">ADMIN · NEW MEMORY</p>
             <h2>add a trip</h2>
             <form className="travel-form" onSubmit={publishTrip}>
@@ -1180,15 +1177,6 @@ function App() {
                   }
                 }}
               >
-                <button
-                  className="lightbox-close"
-                  type="button"
-                  onClick={() => setLightboxIndex(null)}
-                  aria-label="Close photo"
-                >
-                  ×
-                </button>
-
                 {galleryItems.length > 1 && (
                   <button
                     className="lightbox-arrow lightbox-prev"
