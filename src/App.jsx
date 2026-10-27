@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import Globe from 'react-globe.gl';
 import { supabase, supabaseConfigured } from './supabase';
 import './styles.css';
 
@@ -276,7 +275,6 @@ function formatDateRange(start, end) {
 }
 
 function TravelMap({ supabase, isAdmin, session, setError }) {
-  const globeRef = useRef(null);
   const [trips, setTrips] = useState([]);
   const [loadingTrips, setLoadingTrips] = useState(true);
   const [selectedCity, setSelectedCity] = useState(null);
@@ -327,17 +325,6 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
 
   useEffect(() => { loadTrips(); }, [supabase]);
 
-  useEffect(() => {
-    if (globeRef.current) {
-      const controls = globeRef.current.controls();
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.28;
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.08;
-      controls.minDistance = 115;
-      controls.maxDistance = 420;
-    }
-  }, [loadingTrips]);
 
   const cities = useMemo(() => {
     const grouped = new Map();
@@ -509,40 +496,44 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
 
   return (
     <main className="map-page">
-      <div className="map-topline">
-        <div><span className="map-eyebrow">MEMORIES AROUND THE WORLD</span><h1>map</h1></div>
-        {isAdmin && <button className="map-star-button" onClick={() => setFormOpen(true)} aria-label="Add a travel record">★</button>}
-      </div>
-      <div className="globe-stage">
-        <Globe
-          ref={globeRef}
-          width={typeof window !== 'undefined' ? Math.min(window.innerWidth - 24, 1100) : 900}
-          height={typeof window !== 'undefined' ? Math.max(420, Math.min(window.innerHeight - 180, 760)) : 620}
-          backgroundColor="#050607"
-          globeImageUrl="https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
-          bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
-          showAtmosphere
-          atmosphereColor="#a9d9ff"
-          atmosphereAltitude={0.13}
-          htmlElementsData={cities}
-          htmlLat="lat"
-          htmlLng="lng"
-          htmlAltitude={0.012}
-          htmlElement={(city) => {
-            const el = document.createElement('button');
-            el.className = 'globe-city-marker';
-            el.type = 'button';
-            el.innerHTML = `<span class="globe-marker-number">${city.trips.length}</span><span class="globe-marker-label">${city.city_display_name.replace(/[&<>"']/g, '')}</span>`;
-            el.title = `${city.city_display_name} · ${city.trips.length} trip${city.trips.length === 1 ? '' : 's'}`;
-            el.addEventListener('click', (event) => { event.stopPropagation(); setSelectedCity(city); });
-            return el;
-          }}
-          enablePointerInteraction
-        />
-        {cities.length === 0 && !loadingTrips && <div className="globe-empty-note">your travels will appear here</div>}
-        <p className="globe-hint">drag to explore · pinch to zoom</p>
+      <div className="map-topline map-topline-clean">
+        {isAdmin && (
+          <button
+            type="button"
+            className="map-star-button"
+            onClick={() => setFormOpen(true)}
+            aria-label="Add a travel record"
+            title="Add a travel record"
+          >★</button>
+        )}
       </div>
       {loadingTrips && <p className="map-status">loading places…</p>}
+      <section className="travel-city-grid" aria-label="Travel cities">
+        {cities.map((city) => {
+          const latestTrip = city.trips[0];
+          return (
+            <button
+              type="button"
+              className="travel-city-card"
+              key={city.key}
+              onClick={() => setSelectedCity(city)}
+              aria-label={`Open ${city.city_display_name}, ${city.trips.length} travel records`}
+            >
+              <span className="travel-city-image">
+                {latestTrip?.coverUrl
+                  ? <img src={latestTrip.coverUrl} alt="" loading="lazy" />
+                  : <span className="travel-city-image-placeholder">{city.city_display_name.slice(0, 1)}</span>}
+                <span className="travel-city-count">{String(city.trips.length).padStart(2, '0')}</span>
+              </span>
+              <span className="travel-city-card-info">
+                <span className="travel-city-name">{city.city_display_name}</span>
+                <span className="travel-city-meta">{city.trips.length} {city.trips.length === 1 ? 'TRIP' : 'TRIPS'}</span>
+              </span>
+              <span className="travel-city-arrow" aria-hidden="true">↗</span>
+            </button>
+          );
+        })}
+      </section>
       {selectedCity && (
         <div className="city-panel-shade" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedCity(null); }}>
           <section className="city-panel" role="dialog" aria-modal="true" aria-label={`${selectedCity.city_display_name} travel records`}>
