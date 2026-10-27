@@ -1809,13 +1809,13 @@ input:focus-visible {
   font-weight: 700;
 }
 .city-trip-info > p {
-  font-size: 12px !important;
+  font-size: 14px !important;
   line-height: 1.5;
   color: #999;
 }
 .city-trip-actions .view-more-button,
 .view-more-button {
-  font-size: 12px !important;
+  font-size: 14px !important;
   line-height: 1.5;
   font-weight: 700;
 }
@@ -1827,7 +1827,7 @@ input:focus-visible {
   font-weight: 700;
 }
 .trip-detail-heading p {
-  font-size: 14px !important;
+  font-size: 18px !important;
   line-height: 1.5;
   color: #999;
 }
