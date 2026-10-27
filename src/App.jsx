@@ -290,6 +290,12 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
   });
   const [photoFiles, setPhotoFiles] = useState([]);
   const [photoTitles, setPhotoTitles] = useState([]);
+  const [editTripOpen, setEditTripOpen] = useState(false);
+  const [editTripForm, setEditTripForm] = useState({});
+  const [editTripPhotos, setEditTripPhotos] = useState([]);
+  const [editNewFiles, setEditNewFiles] = useState([]);
+  const [editNewTitles, setEditNewTitles] = useState([]);
+  const [editTripSaving, setEditTripSaving] = useState(false);
 
   async function loadTrips() {
     if (!supabase) return;
@@ -326,10 +332,31 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
   useEffect(() => { loadTrips(); }, [supabase]);
 
   useEffect(() => {
-    const openForm = () => setFormOpen(true);
-    window.addEventListener('jewsworld-open-travel-form', openForm);
-    return () => window.removeEventListener('jewsworld-open-travel-form', openForm);
-  }, []);
+    const handleMapStar = () => {
+      if (!isAdmin) return;
+      if (selectedTrip) {
+        const active = trips.find((trip) => trip.id === selectedTrip.id) || selectedTrip;
+        setEditTripForm({
+          city_name: active.city_name || '',
+          city_display_name: active.city_display_name || active.city_name || '',
+          latitude: String(active.latitude ?? ''),
+          longitude: String(active.longitude ?? ''),
+          title: active.title || '',
+          start_date: active.start_date || '',
+          end_date: active.end_date || '',
+          description: active.description || '',
+        });
+        setEditTripPhotos([...(active.photos || [])].sort((a, b) => a.sort_order - b.sort_order).map((photo) => ({ ...photo, editTitle: photo.title || '' })));
+        setEditNewFiles([]);
+        setEditNewTitles([]);
+        setEditTripOpen(true);
+      } else {
+        setFormOpen(true);
+      }
+    };
+    window.addEventListener('jewsworld-map-star', handleMapStar);
+    return () => window.removeEventListener('jewsworld-map-star', handleMapStar);
+  }, [isAdmin, selectedTrip, trips]);
 
 
   const cities = useMemo(() => {
@@ -570,6 +597,116 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
     }
   }
 
+  function moveEditPhoto(index, direction) {
+    setEditTripPhotos((current) => {
+      const next = [...current];
+      const target = index + direction;
+      if (target < 0 || target >= next.length) return current;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
+  async function removeEditPhoto(photo) {
+    if (!isAdmin || !supabase || !selectedTrip) return;
+    if (editTripPhotos.length <= 1 && editNewFiles.length === 0) {
+      setError('A trip must keep at least one photo. Add another photo before deleting this one.');
+      return;
+    }
+    if (!window.confirm('Delete this photo from the trip? This cannot be undone.')) return;
+    const { error: rowError } = await supabase.from('travel_photos').delete().eq('id', photo.id);
+    if (rowError) {
+      setError(rowError.message || 'Could not delete this photo.');
+      return;
+    }
+    const { error: storageError } = await supabase.storage.from('travel-photos').remove([photo.storage_path]);
+    if (storageError) console.error('Travel photo storage cleanup failed:', storageError);
+    const remaining = editTripPhotos.filter((item) => item.id !== photo.id);
+    setEditTripPhotos(remaining);
+    const active = trips.find((trip) => trip.id === selectedTrip.id) || selectedTrip;
+    const nextCover = active.cover_storage_path === photo.storage_path ? (remaining[0]?.storage_path || null) : active.cover_storage_path;
+    const { error: coverError } = await supabase.from('travel_trips').update({ cover_storage_path: nextCover, updated_at: new Date().toISOString() }).eq('id', active.id);
+    if (coverError) setError(coverError.message || 'Photo deleted, but the cover could not be updated.');
+    await loadTrips();
+  }
+
+  async function saveTripChanges(event) {
+    event.preventDefault();
+    if (!isAdmin || !session || !supabase || !selectedTrip) {
+      setError('Admin access is required to edit travel records.');
+      return;
+    }
+    if (!editTripPhotos.length && !editNewFiles.length) {
+      setError('Please keep at least one photo in this trip.');
+      return;
+    }
+    const latitude = Number(editTripForm.latitude);
+    const longitude = Number(editTripForm.longitude);
+    if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+      setError('Please enter valid latitude and longitude.');
+      return;
+    }
+    if (editTripForm.end_date < editTripForm.start_date) {
+      setError('The end date must be on or after the start date.');
+      return;
+    }
+    setEditTripSaving(true);
+    setError('');
+    const uploadedPaths = [];
+    try {
+      const { error: tripError } = await supabase.from('travel_trips').update({
+        city_name: editTripForm.city_name.trim(),
+        city_display_name: editTripForm.city_display_name.trim() || editTripForm.city_name.trim().toUpperCase(),
+        latitude,
+        longitude,
+        title: editTripForm.title.trim(),
+        start_date: editTripForm.start_date,
+        end_date: editTripForm.end_date,
+        description: editTripForm.description.trim() || null,
+        updated_at: new Date().toISOString(),
+      }).eq('id', selectedTrip.id);
+      if (tripError) throw tripError;
+
+      for (let index = 0; index < editTripPhotos.length; index += 1) {
+        const photo = editTripPhotos[index];
+        const { error: photoError } = await supabase.from('travel_photos').update({ title: photo.editTitle.trim() || null, sort_order: index }).eq('id', photo.id);
+        if (photoError) throw photoError;
+      }
+
+      const newRows = [];
+      for (let index = 0; index < editNewFiles.length; index += 1) {
+        const file = editNewFiles[index];
+        const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const path = `${selectedTrip.id}/${crypto.randomUUID()}.${extension}`;
+        const { error: storageError } = await supabase.storage.from('travel-photos').upload(path, file, { upsert: false, contentType: file.type || 'image/jpeg' });
+        if (storageError) throw storageError;
+        uploadedPaths.push(path);
+        newRows.push({ trip_id: selectedTrip.id, storage_path: path, title: (editNewTitles[index] || '').trim() || null, sort_order: editTripPhotos.length + index });
+      }
+      if (newRows.length) {
+        const { error: insertError } = await supabase.from('travel_photos').insert(newRows);
+        if (insertError) throw insertError;
+      }
+
+      const firstPath = editTripPhotos[0]?.storage_path || uploadedPaths[0] || null;
+      const { error: coverError } = await supabase.from('travel_trips').update({ cover_storage_path: firstPath, updated_at: new Date().toISOString() }).eq('id', selectedTrip.id);
+      if (coverError) throw coverError;
+
+      setEditTripOpen(false);
+      setEditNewFiles([]);
+      setEditNewTitles([]);
+      await loadTrips();
+    } catch (editError) {
+      setError(editError.message || 'Could not save trip changes.');
+      if (uploadedPaths.length) {
+        const { error: cleanupError } = await supabase.storage.from('travel-photos').remove(uploadedPaths);
+        if (cleanupError) console.error('Could not clean up newly uploaded photos:', cleanupError);
+      }
+    } finally {
+      setEditTripSaving(false);
+    }
+  }
+
   const selectedCityTrips = selectedCity
     ? trips.filter((trip) => trip.city_name.trim().toLowerCase() === selectedCity.key)
     : [];
@@ -607,6 +744,28 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
             </article>
           ))}
         </section>
+        {editTripOpen && isAdmin && (
+          <div className="city-panel-shade form-shade" onClick={(event) => { if (event.target === event.currentTarget && !editTripSaving) setEditTripOpen(false); }}>
+            <section className="travel-form-panel edit-trip-panel" role="dialog" aria-modal="true" aria-label="Edit travel record">
+              <p className="edit-panel-kicker">ADMIN · EDIT MEMORY</p>
+              <h2>modify this trip</h2>
+              <form className="travel-form" onSubmit={saveTripChanges}>
+                <label>City<input value={editTripForm.city_name || ''} onChange={(event) => setEditTripForm((old) => ({ ...old, city_name: event.target.value }))} required /></label>
+                <label>City display name<input value={editTripForm.city_display_name || ''} onChange={(event) => setEditTripForm((old) => ({ ...old, city_display_name: event.target.value }))} required /></label>
+                <div className="travel-coordinate-row"><label>Latitude<input type="number" step="any" value={editTripForm.latitude || ''} onChange={(event) => setEditTripForm((old) => ({ ...old, latitude: event.target.value }))} required /></label><label>Longitude<input type="number" step="any" value={editTripForm.longitude || ''} onChange={(event) => setEditTripForm((old) => ({ ...old, longitude: event.target.value }))} required /></label></div>
+                <label>Trip title<input value={editTripForm.title || ''} onChange={(event) => setEditTripForm((old) => ({ ...old, title: event.target.value }))} required /></label>
+                <div className="travel-coordinate-row"><label>Start date<input type="date" value={editTripForm.start_date || ''} onChange={(event) => setEditTripForm((old) => ({ ...old, start_date: event.target.value }))} required /></label><label>End date<input type="date" min={editTripForm.start_date || undefined} value={editTripForm.end_date || ''} onChange={(event) => setEditTripForm((old) => ({ ...old, end_date: event.target.value }))} required /></label></div>
+                <label>Description<textarea rows="3" value={editTripForm.description || ''} onChange={(event) => setEditTripForm((old) => ({ ...old, description: event.target.value }))} placeholder="A few words, if you want…" /></label>
+                <div className="edit-photo-list"><p className="edit-section-label">Existing photos · drag order with arrows</p>
+                  {editTripPhotos.map((photo, index) => <div className="edit-photo-row" key={photo.id}><img src={photo.url} alt={photo.editTitle || 'Trip photo'} /><div className="edit-photo-fields"><label>Photo {index + 1} subtitle<input value={photo.editTitle} onChange={(event) => setEditTripPhotos((old) => old.map((item) => item.id === photo.id ? { ...item, editTitle: event.target.value } : item))} placeholder="optional subtitle" /></label><div className="edit-photo-actions"><button type="button" disabled={index === 0} onClick={() => moveEditPhoto(index, -1)} aria-label="Move photo up">↑</button><button type="button" disabled={index === editTripPhotos.length - 1} onClick={() => moveEditPhoto(index, 1)} aria-label="Move photo down">↓</button><button type="button" className="edit-remove-photo" disabled={editTripPhotos.length <= 1 && editNewFiles.length === 0} onClick={() => removeEditPhoto(photo)}>delete</button></div></div></div>)}
+                </div>
+                <label>Add more photos<input type="file" accept="image/*" multiple onChange={(event) => { const files = Array.from(event.target.files || []); setEditNewFiles(files); setEditNewTitles(files.map(() => '')); }} /></label>
+                {editNewFiles.length > 0 && <div className="edit-new-photo-list">{editNewFiles.map((file, index) => <label key={`${file.name}-${index}`}>New photo {index + 1} · {file.name}<input value={editNewTitles[index] || ''} onChange={(event) => setEditNewTitles((old) => old.map((value, i) => i === index ? event.target.value : value))} placeholder="optional subtitle" /></label>)}</div>}
+                <div className="edit-trip-footer"><button className="travel-publish-button" type="submit" disabled={editTripSaving}>{editTripSaving ? 'saving…' : 'save changes'}</button><button className="edit-cancel-button" type="button" onClick={() => setEditTripOpen(false)} disabled={editTripSaving}>cancel</button></div>
+              </form>
+            </section>
+          </div>
+        )}
         {tripLightbox !== null && activeTrip.photos[tripLightbox] && (
           <div className="trip-lightbox" role="dialog" aria-modal="true" onClick={(event) => { if (event.target === event.currentTarget) setTripLightbox(null); }}>
             {activeTrip.photos.length > 1 && <button className="trip-lightbox-arrow left" onClick={() => setTripLightbox((tripLightbox - 1 + activeTrip.photos.length) % activeTrip.photos.length)} aria-label="Previous photo">‹</button>}
@@ -732,6 +891,11 @@ function App() {
   const [uploading, setUploading] = useState(false);
 
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [diaryFormOpen, setDiaryFormOpen] = useState(false);
+  const [diaryFormDate, setDiaryFormDate] = useState(dateKey(today.getFullYear(), today.getMonth() + 1, today.getDate()));
+  const [diaryFormFile, setDiaryFormFile] = useState(null);
+  const [diaryFormCaption, setDiaryFormCaption] = useState('');
+  const [diaryFormSaving, setDiaryFormSaving] = useState(false);
 
   const selectedDate = dateKey(year, month, day);
 
@@ -1024,6 +1188,109 @@ function App() {
     }
   }
 
+  async function uploadDiaryEntry(event) {
+    event.preventDefault();
+    if (!isAdmin || !session || !supabase) {
+      setError('Admin access is required to add diary entries.');
+      return;
+    }
+    if (!diaryFormFile) {
+      setError('Please choose a photo first.');
+      return;
+    }
+    if (!diaryFormCaption.trim()) {
+      setError('Please enter a subtitle.');
+      return;
+    }
+    setDiaryFormSaving(true);
+    setError('');
+    let postId = null;
+    let storagePath = null;
+    try {
+      const { data: post, error: postError } = await supabase.from('diary_posts').insert({
+        title: diaryFormCaption.trim(), body: '', entry_date: diaryFormDate, status: 'published', author_id: session.user.id,
+      }).select('id').single();
+      if (postError) throw postError;
+      postId = post.id;
+      const extension = diaryFormFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+      storagePath = `${post.id}/${crypto.randomUUID()}.${extension}`;
+      const { error: storageError } = await supabase.storage.from('public-post-photos').upload(storagePath, diaryFormFile, { upsert: false, contentType: diaryFormFile.type || 'image/jpeg' });
+      if (storageError) throw storageError;
+      const { error: photoError } = await supabase.from('post_photos').insert({ post_id: post.id, storage_path: storagePath, caption: diaryFormCaption.trim() });
+      if (photoError) throw photoError;
+      const [y, m, d] = diaryFormDate.split('-').map(Number);
+      setYear(y); setMonth(m); setDay(d);
+      setDiaryFormOpen(false); setDiaryFormFile(null); setDiaryFormCaption('');
+      await loadPosts();
+    } catch (uploadError) {
+      setError(getErrorMessage(uploadError));
+      if (storagePath) {
+        const { error: cleanupStorageError } = await supabase.storage.from('public-post-photos').remove([storagePath]);
+        if (cleanupStorageError) console.error(cleanupStorageError);
+      }
+      if (postId) {
+        const { error: cleanupPostError } = await supabase.from('diary_posts').delete().eq('id', postId);
+        if (cleanupPostError) console.error(cleanupPostError);
+      }
+    } finally {
+      setDiaryFormSaving(false);
+    }
+  }
+
+  async function deleteDiaryPost(post, { confirm = true, refresh = true } = {}) {
+    if (!supabase || !isAdmin) {
+      setError('Admin access is required to delete diary entries.');
+      return false;
+    }
+    if (confirm && !window.confirm('Delete this diary entry and its photo? This cannot be undone.')) return false;
+    const photos = post.photos || [];
+    const { error: photoRowsError } = await supabase.from('post_photos').delete().eq('post_id', post.id);
+    if (photoRowsError) {
+      setError(getErrorMessage(photoRowsError));
+      return false;
+    }
+    const { error: postError } = await supabase.from('diary_posts').delete().eq('id', post.id);
+    if (postError) {
+      setError(getErrorMessage(postError));
+      return false;
+    }
+    const paths = photos.map((photo) => photo.storage_path).filter(Boolean);
+    if (paths.length) {
+      const { error: storageError } = await supabase.storage.from('public-post-photos').remove(paths);
+      if (storageError) console.error('Diary photo storage cleanup failed:', storageError);
+    }
+    if (refresh) await loadPosts();
+    return true;
+  }
+
+  async function deleteDiaryDate() {
+    if (!isAdmin || !supabase) return;
+    const { data, error: queryError } = await supabase
+      .from('diary_posts')
+      .select('id, title, body, entry_date, created_at, post_photos(id, storage_path, caption)')
+      .eq('entry_date', diaryFormDate)
+      .eq('status', 'published');
+    if (queryError) {
+      setError(getErrorMessage(queryError));
+      return;
+    }
+    const entries = (data || []).map((post) => ({
+      ...post,
+      photos: (post.post_photos || []).map((photo) => ({ ...photo })),
+    }));
+    if (!entries.length) {
+      setError('There are no diary entries on this date.');
+      return;
+    }
+    if (!window.confirm(`Delete all ${entries.length} diary entr${entries.length === 1 ? 'y' : 'ies'} from ${diaryFormDate}? This cannot be undone.`)) return;
+    for (const post of entries) {
+      const deleted = await deleteDiaryPost(post, { confirm: false, refresh: false });
+      if (!deleted) return;
+    }
+    await loadPosts();
+    setDiaryFormOpen(false);
+  }
+
   async function logOut() {
     if (supabase) {
       const { error: logoutError } =
@@ -1042,55 +1309,35 @@ function App() {
   return (
     <div className="site-shell">
       <header className="site-header">
-        <button
-          className="nav-link"
-          onClick={() => setPage('home')}
-        >
-          home
-        </button>
-
-        <button
-          className="nav-link"
-          onClick={() => { setPage('map'); setMapViewKey((key) => key + 1); }}
-        >
-          map
-        </button>
-        {page === 'map' && isAdmin && (
-          <button
-            type="button"
-            className="map-star-button"
-            onClick={() => window.dispatchEvent(new Event('jewsworld-open-travel-form'))}
-            aria-label="Add a travel record"
-            title="Add a travel record"
-          >★</button>
-        )}
-
-        <button
-          className="nav-link"
-          onClick={() => setPage('diary')}
-        >
-          diary
-        </button>
-
-        <button
-          className="nav-link"
-          onClick={() => setPage('about')}
-        >
-          about
-        </button>
-
-        {isAdmin ? (
-          <button className="nav-link" onClick={logOut}>
-            log out
-          </button>
-        ) : (
-          <button
-            className="nav-link"
-            onClick={() => setLoginOpen(true)}
-          >
-            log in
-          </button>
-        )}
+        {['home', 'map', 'diary', 'about'].map((navPage) => {
+          const activeNavPage = page === 'gallery' ? 'diary' : page;
+          const active = activeNavPage === navPage;
+          const starAction = () => {
+            if (navPage === 'home') return;
+            if (navPage === 'about') {
+              if (isAdmin) logOut();
+              else setLoginOpen(true);
+              return;
+            }
+            if (!isAdmin) return;
+            if (navPage === 'map') {
+              window.dispatchEvent(new Event('jewsworld-map-star'));
+            } else if (navPage === 'diary') {
+              setDiaryFormDate(selectedDate);
+              setDiaryFormOpen(true);
+              loadPosts();
+            }
+          };
+          return (
+            <div className="nav-item-wrap" key={navPage}>
+              <button type="button" className={`nav-link ${active ? 'is-active' : ''}`} onClick={() => {
+                if (navPage === 'map') { setPage('map'); setMapViewKey((key) => key + 1); }
+                else setPage(navPage);
+              }}>{navPage}</button>
+              {active && <button type="button" className="map-star-button nav-star-button" onClick={starAction} aria-label={`${navPage} options`} title={navPage === 'about' ? (isAdmin ? 'Log out' : 'Log in') : navPage === 'map' ? 'Add or modify a trip' : navPage === 'diary' ? 'Add or manage a diary entry' : 'Home'}>★</button>}
+            </div>
+          );
+        })}
       </header>
 
       {/* Home */}
@@ -1141,19 +1388,6 @@ function App() {
               />
 
               <div className="month-column">
-                <button
-                  className="star-button"
-                  type="button"
-                  aria-label="Open photos for selected date"
-                  onClick={() => {
-                    setLightboxIndex(null);
-                    setPage('gallery');
-                    loadPosts();
-                  }}
-                >
-                  ★
-                </button>
-
                 <DateWheel
                   label="Month"
                   value={month}
@@ -1171,6 +1405,7 @@ function App() {
                 pad
               />
             </div>
+            <button type="button" className="view-day-button" onClick={() => { setLightboxIndex(null); setPage('gallery'); loadPosts(); }}>view day</button>
           </section>
         </main>
       )}
@@ -1277,33 +1512,8 @@ function App() {
                     className="delete-link"
                     type="button"
                     onClick={async () => {
-                      const confirmed = window.confirm(
-                        'Delete this photo entry?'
-                      );
-
-                      if (!confirmed || !supabase) return;
-
-                      const { error: deleteError } = await supabase
-                        .from('diary_posts')
-                        .delete()
-                        .eq('id', item.post.id);
-
-                      if (deleteError) {
-                        setError(getErrorMessage(deleteError));
-                      } else {
-                        const storagePaths = (item.post.photos || [])
-                          .map((photo) => photo.storage_path)
-                          .filter(Boolean);
-                        if (storagePaths.length) {
-                          const { error: storageError } = await supabase
-                            .storage
-                            .from('public-post-photos')
-                            .remove(storagePaths);
-                          if (storageError) console.error('Diary photo storage cleanup failed:', storageError);
-                        }
-                        setLightboxIndex(null);
-                        await loadPosts();
-                      }
+                      const deleted = await deleteDiaryPost(item.post);
+                      if (deleted) setLightboxIndex(null);
                     }}
                   >
                     delete
@@ -1406,6 +1616,25 @@ function App() {
               </div>
             )}
         </main>
+      )}
+
+      {diaryFormOpen && isAdmin && (
+        <div className="city-panel-shade form-shade" onClick={(event) => { if (event.target === event.currentTarget && !diaryFormSaving) setDiaryFormOpen(false); }}>
+          <section className="travel-form-panel diary-form-panel" role="dialog" aria-modal="true" aria-label="Add diary entry">
+            <p className="edit-panel-kicker">ADMIN · NEW MEMORY</p>
+            <h2>add a diary entry</h2>
+            {error && <p className="error-message" role="alert">{error}</p>}
+            <form className="travel-form" onSubmit={uploadDiaryEntry}>
+              <label>Date<input type="date" value={diaryFormDate} onChange={(event) => setDiaryFormDate(event.target.value)} required /></label>
+              <label>Choose a photo<input type="file" accept="image/*" onChange={(event) => setDiaryFormFile(event.target.files?.[0] || null)} required /></label>
+              {diaryFormFile && <p className="selected-file-name">{diaryFormFile.name}</p>}
+              <label>Subtitle<input type="text" maxLength={120} value={diaryFormCaption} onChange={(event) => setDiaryFormCaption(event.target.value)} placeholder="A little memory…" required /></label>
+              <button className="travel-publish-button" type="submit" disabled={diaryFormSaving}>{diaryFormSaving ? 'saving…' : 'save diary entry'}</button>
+              <button className="edit-cancel-button" type="button" onClick={deleteDiaryDate} disabled={diaryFormSaving}>delete all entries for this date</button>
+              <button className="edit-cancel-button" type="button" onClick={() => setDiaryFormOpen(false)} disabled={diaryFormSaving}>cancel</button>
+            </form>
+          </section>
+        </div>
       )}
 
       {!supabaseConfigured && (
