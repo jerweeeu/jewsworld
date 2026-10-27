@@ -905,7 +905,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
 }, []);
   const [transitioningId, setTransitioningId] = useState(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [form, setForm] = useState({ title: '', translated_title: '', info_heading: 'Actor', info_content: '', Synopsis_note: '' });
+  const [form, setForm] = useState({ title: '', translated_title: '', info_heading: 'Actor', info_content: '', synopsis_note: '' });
   const [itemForm, setItemForm] = useState({ type: 'text', text: '' });
   const startX = useRef(null);
 
@@ -956,7 +956,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
 
       setMenuOpen(false);
       setPosterFile(null);
-      setForm({ title: '', translated_title: '', info_heading: 'Actor', info_content: '', Synopsis_note: '' });
+      setForm({ title: '', translated_title: '', info_heading: 'Actor', info_content: '', synopsis_note: '' });
       setModalOpen(true);
     };
     window.addEventListener('jewsworld-archive-star', open);
@@ -997,7 +997,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
         translated_title: form.translated_title.trim() || null,
         info_heading: form.info_heading.trim() || 'Actor',
         info_content: form.info_content.trim() || null,
-        trailer_note: form.synopsis_note.trim() || null,
+        synopsis_note: form.trailer_note.trim() || null,
         poster_storage_path: storagePath,
         created_by: session.user.id,
       }).select('*').single();
@@ -1170,7 +1170,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
           <label>Translated title<input value={form.translated_title} onChange={(e) => setCurrentForm({ translated_title: e.target.value })} /></label>
           <label>Information heading<input value={form.info_heading} onChange={(e) => setCurrentForm({ info_heading: e.target.value })} placeholder="Actor / Actress / Director" /></label>
           <label>Information content<input className="archive-information-content-input" value={form.info_content} onChange={(e) => setCurrentForm({ info_content: e.target.value })} /></label>
-          <label>Synopsis note<textarea rows="3" value={form.synoposis_note} onChange={(e) => setCurrentForm({ synopsis_note: e.target.value })} /></label>
+          <label>Synopsis note<textarea rows="3" value={form.synopsis_note} onChange={(e) => setCurrentForm({ synopsis_note: e.target.value })} /></label>
           <button className="archive-upload-submit" disabled={saving}>{saving ? 'saving…' : 'Save changes'}</button></form>}
         {editMode === 'poster' && <form onSubmit={changePoster} className="archive-editor-form"><h2>Change Poster</h2><label className="archive-upload-prompt">{posterFile ? posterFile.name : 'Choose a new poster'}<input type="file" accept="image/*" required onChange={(e) => setPosterFile(e.target.files?.[0] || null)} /></label><button className="archive-upload-submit" disabled={saving || !posterFile}>{saving ? 'saving…' : 'Change poster'}</button></form>}
         {editMode === 'add-content' && <form onSubmit={saveItem} className="archive-editor-form"><h2>Add Photo &amp; Text</h2><label>Content type<select value={itemForm.type} onChange={(e) => setItemForm({ type: e.target.value, text: '' })}><option value="text">Text</option><option value="image">Photo</option></select></label>{itemForm.type === 'text' ? <label>Text<textarea className="archive-information-content-input archive-content-text-input" rows="6" value={itemForm.text} onChange={(e) => setItemForm({ ...itemForm, text: e.target.value })} required /></label> : <label className="archive-upload-prompt">{itemFile ? itemFile.name : 'Choose a photo'}<input type="file" accept="image/*" required onChange={(e) => setItemFile(e.target.files?.[0] || null)} /></label>}<button className="archive-upload-submit" disabled={saving}>{saving ? 'saving…' : 'Add to film'}</button></form>}
