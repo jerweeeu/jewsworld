@@ -821,7 +821,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
                     <h3>{trip.title}</h3>
                     <p>{formatDateRange(trip.start_date, trip.end_date)}</p>
                     <div className="city-trip-actions">
-                      <button className="view-more-button" onClick={() => { setSelectedTrip(trip); setSelectedCity(null); }}>view more</button>
+                      <button className="view-more-button" onClick={() => { setSelectedTrip(trip); setSelectedCity(null); }}>☆</button>
 
                     </div>
                   </div>
