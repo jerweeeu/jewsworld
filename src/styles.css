@@ -1452,3 +1452,65 @@ input:focus-visible {
 @media (min-width: 651px) {
   .map-star-button { margin-left: -1.7vw; margin-right: auto; }
 }
+
+
+/* Admin deletion controls for travel memories */
+.city-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.city-panel-heading h2 { margin: 0; }
+.travel-delete-button {
+  flex: 0 0 auto;
+  border: 1px solid #d9b8b5;
+  background: transparent;
+  color: #9b3933;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: .015em;
+  cursor: pointer;
+}
+.travel-delete-button:hover { background: #fbf0ef; }
+.travel-delete-button:disabled { opacity: .45; cursor: wait; }
+.trip-detail-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  position: relative;
+}
+.trip-detail-heading > div { text-align: center; }
+.trip-detail-heading > .travel-delete-button { position: absolute; right: 0; top: 0; }
+.trip-photo-item { min-width: 0; display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+.trip-photo-item .trip-photo-tile { display: block; width: 100%; }
+.photo-delete-button { align-self: flex-start; }
+.city-trip-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+.city-trip-info { padding-bottom: 0 !important; }
+.city-trip-actions .view-more-button {
+  position: static;
+  display: inline-flex;
+  margin: 0;
+}
+.city-trip-actions .travel-delete-button { padding: 5px 7px; }
+@media (max-width: 650px) {
+  .city-panel-heading { align-items: flex-start; gap: 10px; }
+  .city-panel-heading h2 { font-size: 22px; }
+  .travel-delete-button { padding: 6px 7px; font-size: 9px; }
+  .trip-detail-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .trip-detail-heading > div { width: 100%; }
+  .trip-detail-heading > .travel-delete-button { position: static; align-self: center; }
+  .trip-photo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
