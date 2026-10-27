@@ -640,7 +640,7 @@ function App() {
       {/* About */}
       {page === 'about' && (
         <main className="about-page">
-          <p>where the flower blooms</p>
+          <p>Where This Flower Blooms</p>
         </main>
       )}
 
