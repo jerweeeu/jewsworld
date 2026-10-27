@@ -1256,3 +1256,42 @@ input:focus-visible {
   .travel-city-name { display: block; font-size: 15px; }
   .travel-city-meta { display: block; margin-top: 5px; font-size: 8px; }
 }
+
+
+/* Travel archive refinements */
+.site-header { z-index: 100; }
+.nav-link { font-weight: 700; }
+.map-page { padding-top: 76px; }
+.map-topline-clean { position: fixed; top: 17px; right: clamp(18px, 3.2vw, 48px); z-index: 101; min-height: 0; margin: 0; width: auto; }
+.map-star-button { width: auto; height: auto; min-width: 0; min-height: 0; display: block; padding: 0; border: 0; border-radius: 0; background: transparent; color: #111; font-size: 12px; line-height: 1; font-weight: 700; transition: opacity .2s ease; }
+.map-star-button:hover { background: transparent; transform: none; opacity: .55; }
+.travel-city-grid { gap: 32px 18px; }
+.travel-city-card { padding-bottom: 0; border-bottom: 0; }
+.travel-city-image { aspect-ratio: 16 / 9; }
+.travel-city-image-placeholder { font-weight: 700; }
+.travel-city-card-info { display: block; padding-top: 11px; }
+.travel-city-name { display: block; font-weight: 700; letter-spacing: -.025em; font-size: clamp(17px, 1.8vw, 24px); }
+.city-panel-kicker { display: none; }
+.city-trip-card { grid-template-columns: 145px minmax(0, 1fr); align-items: stretch; gap: 18px; border-top: 0; padding: 12px 0; }
+.city-trip-cover { width: 145px; aspect-ratio: 16 / 9; align-self: start; }
+.city-trip-info { position: relative; min-height: 82px; padding: 0 0 22px; }
+.city-trip-info h3, .city-trip-info p { font-size: 13px; font-weight: 700; line-height: 1.35; color: #111; margin: 0 0 7px; }
+.view-more-button { position: absolute; right: 0; bottom: 0; margin: 0; font-size: 11px; font-weight: 700; color: #111; }
+.view-more-button:hover { color: #888; text-decoration: none; }
+.trip-detail-heading h1 { font-weight: 700; }
+.trip-photo-tile img { aspect-ratio: 16 / 11; object-fit: cover; }
+.trip-lightbox { background: #fff; color: #111; }
+.trip-lightbox-close, .trip-lightbox-arrow { color: #111; }
+.trip-lightbox p { color: #666; }
+@media (max-width: 520px) {
+  .map-page { padding: 70px 12px 32px; }
+  .map-topline-clean { top: 19px; right: 12px; margin: 0; }
+  .travel-city-grid { gap: 22px 10px; }
+  .travel-city-card { padding-bottom: 0; }
+  .travel-city-image { aspect-ratio: 16 / 10; }
+  .travel-city-name { font-size: 15px; font-weight: 700; }
+  .city-trip-card { grid-template-columns: 112px minmax(0, 1fr); gap: 12px; }
+  .city-trip-cover { width: 112px; aspect-ratio: 16 / 10; }
+  .city-trip-info h3, .city-trip-info p { font-size: 11px; }
+  .view-more-button { font-size: 10px; }
+}
