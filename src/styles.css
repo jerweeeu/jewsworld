@@ -108,10 +108,12 @@ input:focus-visible {
 .about-page p {
   text-align: center;
 
-  font-size: clamp(14px, 1.25vw, 17px);
-  line-height: 1.55;
-  font-weight: 400;
-  letter-spacing: -0.025em;
+  /* Match the size, color, and bold editorial style of the site navigation/title */
+  font-size: clamp(15px, 1.45vw, 22px);
+  line-height: 1.25;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: -.035em;
 }
 
 .home-copy p,
