@@ -325,6 +325,12 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
 
   useEffect(() => { loadTrips(); }, [supabase]);
 
+  useEffect(() => {
+    const openForm = () => setFormOpen(true);
+    window.addEventListener('jewsworld-open-travel-form', openForm);
+    return () => window.removeEventListener('jewsworld-open-travel-form', openForm);
+  }, []);
+
 
   const cities = useMemo(() => {
     const grouped = new Map();
@@ -494,17 +500,6 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
 
   return (
     <main className="map-page">
-      <div className="map-topline map-topline-clean">
-        {isAdmin && (
-          <button
-            type="button"
-            className="map-star-button"
-            onClick={() => setFormOpen(true)}
-            aria-label="Add a travel record"
-            title="Add a travel record"
-          >★</button>
-        )}
-      </div>
       {loadingTrips && <p className="map-status">loading places…</p>}
       <section className="travel-city-grid" aria-label="Travel cities">
         {cities.map((city) => {
@@ -530,7 +525,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
         })}
       </section>
       {selectedCity && (
-        <div className="city-panel-shade" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedCity(null); }}>
+        <div className="city-panel-shade" onClick={(event) => { if (event.target === event.currentTarget) setSelectedCity(null); }}>
           <section className="city-panel" role="dialog" aria-modal="true" aria-label={`${selectedCity.city_display_name} travel records`}>
             <h2>{selectedCity.city_display_name}</h2>
             <div className="city-trip-list">
@@ -551,7 +546,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
         </div>
       )}
       {formOpen && (
-        <div className="city-panel-shade form-shade" onMouseDown={(event) => { if (event.target === event.currentTarget && !saving) setFormOpen(false); }}>
+        <div className="city-panel-shade form-shade" onClick={(event) => { if (event.target === event.currentTarget && !saving) setFormOpen(false); }}>
           <section className="travel-form-panel" role="dialog" aria-modal="true" aria-label="Add travel record">
             <p className="city-panel-kicker">ADMIN · NEW MEMORY</p>
             <h2>add a trip</h2>
@@ -925,6 +920,15 @@ function App() {
         >
           map
         </button>
+        {page === 'map' && isAdmin && (
+          <button
+            type="button"
+            className="map-star-button"
+            onClick={() => window.dispatchEvent(new Event('jewsworld-open-travel-form'))}
+            aria-label="Add a travel record"
+            title="Add a travel record"
+          >★</button>
+        )}
 
         <button
           className="nav-link"
@@ -1177,6 +1181,15 @@ function App() {
                   }
                 }}
               >
+                <button
+                  className="lightbox-close"
+                  type="button"
+                  onClick={() => setLightboxIndex(null)}
+                  aria-label="Close photo"
+                >
+                  ×
+                </button>
+
                 {galleryItems.length > 1 && (
                   <button
                     className="lightbox-arrow lightbox-prev"
