@@ -278,7 +278,7 @@ input:focus-visible {
   color: #c9c9c9;
 
   font-size: clamp(22px, 4.4vw, 42px);
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: -0.055em;
   line-height: 48px;
 
@@ -305,6 +305,9 @@ input:focus-visible {
 
 .gallery-page {
   min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
   padding: 80px clamp(12px, 1.3vw, 22px) 28px;
 }
 
@@ -319,6 +322,7 @@ input:focus-visible {
 
 .photo-gallery {
   display: grid;
+  width: 100%;
 
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: clamp(12px, 1.1vw, 18px);
@@ -1768,7 +1772,9 @@ input:focus-visible {
 }
 .diary-selected-date {
   width: 100%;
-  padding: 36px 0 20px;
+  margin-top: auto;
+  padding: 36px 0 0;
+  margin-bottom: 0;
   color: #999;
   font-family: inherit;
   font-size: 12px;
@@ -1829,6 +1835,7 @@ input:focus-visible {
 .trip-detail-heading p {
   font-size: 18px !important;
   line-height: 1.5;
+  font-weight: 400;
   color: #999;
 }
 
