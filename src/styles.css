@@ -1906,6 +1906,7 @@ input:focus-visible {
   top: 50%;
   left: 50%;
   width: clamp(210px, 25vw, 340px);
+  aspect-ratio: 2 / 3;
   padding: 0;
   border: 0;
   border-radius: 2px;
@@ -1926,8 +1927,8 @@ input:focus-visible {
 .archive-poster-card img {
   display: block;
   width: 100%;
-  height: auto;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
   user-select: none;
   pointer-events: none;
 }
@@ -2033,3 +2034,91 @@ input:focus-visible {
   cursor: pointer;
 }
 .archive-upload-submit:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Archive film detail — editorial exhibition layout */
+.archive-detail-page {
+  display: block;
+  position: relative;
+  min-height: 100vh;
+  overflow: visible;
+  padding: 112px clamp(24px, 7vw, 110px) 90px;
+  align-items: initial;
+}
+.archive-back-button,
+.archive-detail-star {
+  position: absolute;
+  top: 88px;
+  z-index: 25;
+  border: 0;
+  background: transparent;
+  color: #242424;
+  cursor: pointer;
+}
+.archive-back-button { left: clamp(24px, 4vw, 58px); font: inherit; font-size: 13px; }
+.archive-detail-star { right: clamp(24px, 4vw, 58px); font-size: 24px; line-height: 1; }
+.archive-action-menu {
+  position: absolute;
+  top: 122px;
+  right: clamp(24px, 4vw, 58px);
+  z-index: 50;
+  width: 220px;
+  padding: 8px 0;
+  background: #fff;
+  box-shadow: 0 12px 40px rgba(0,0,0,.12);
+}
+.archive-action-menu button { display: block; width: 100%; padding: 12px 18px; border: 0; background: transparent; text-align: left; font: inherit; font-size: 13px; cursor: pointer; }
+.archive-action-menu button:hover { background: #f5f4f1; }
+.archive-action-menu .archive-delete-action { color: #a33; }
+.archive-film-header { max-width: 1000px; margin: 0 auto clamp(52px, 7vw, 96px); text-align: center; }
+.archive-film-header h1 { margin: 0; color: #050505; font-size: clamp(48px, 7.2vw, 104px); line-height: .98; letter-spacing: -.055em; font-weight: 800; overflow-wrap: anywhere; }
+.archive-film-header h2 { margin: 8px 0 0; color: #d4d4dc; font-size: clamp(38px, 6vw, 82px); line-height: 1.05; letter-spacing: -.045em; font-weight: 800; overflow-wrap: anywhere; }
+.archive-film-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(28px, 7vw, 100px); max-width: 620px; margin: clamp(36px, 4vw, 58px) auto 0; }
+.archive-film-meta section { min-width: 0; }
+.archive-film-meta h3 { margin: 0 0 4px; color: #111; font-size: clamp(16px, 1.4vw, 20px); font-weight: 700; }
+.archive-film-meta p { margin: 0; color: #b9b9c5; font-size: clamp(15px, 1.4vw, 20px); line-height: 1.28; font-weight: 650; white-space: pre-wrap; overflow-wrap: anywhere; }
+.archive-film-content { display: grid; gap: clamp(54px, 8vw, 120px); max-width: 1240px; margin: 0 auto; }
+.archive-content-item { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 76px); align-items: center; }
+.archive-content-item.is-reversed { direction: rtl; }
+.archive-content-item.is-reversed > * { direction: ltr; }
+.archive-content-item > img { display: block; width: 100%; height: auto; max-height: 72vh; object-fit: contain; border-radius: 3px; }
+.archive-content-text { color: #252525; font-size: clamp(15px, 1.25vw, 18px); line-height: 1.9; white-space: pre-wrap; overflow-wrap: anywhere; }
+.archive-item-controls { position: absolute; top: 8px; right: 8px; z-index: 4; display: flex; gap: 4px; direction: ltr; }
+.archive-item-controls button, .archive-manage-row button { width: 30px; height: 30px; border: 0; background: rgba(255,255,255,.94); color: #333; font-size: 17px; cursor: pointer; }
+.archive-item-controls button:disabled, .archive-manage-row button:disabled { opacity: .3; cursor: default; }
+.archive-neighbor-nav { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; max-width: 1240px; margin: clamp(70px, 10vw, 140px) auto 0; }
+.archive-neighbor { display: grid; gap: 10px; width: clamp(88px, 12vw, 150px); padding: 0; border: 0; background: transparent; color: #999; cursor: pointer; text-align: left; }
+.archive-neighbor-next { text-align: right; }
+.archive-neighbor img { display: block; width: 100%; aspect-ratio: auto; height: auto; max-height: 210px; object-fit: contain; filter: grayscale(1); opacity: .28; transition: filter .42s ease, opacity .42s ease; }
+.archive-neighbor:hover img { filter: grayscale(0); opacity: 1; }
+.archive-neighbor span { font-size: 11px; letter-spacing: .04em; }
+.archive-editor-panel { width: min(92vw, 560px); }
+.archive-editor-form { display: grid; gap: 17px; }
+.archive-editor-form h2 { margin: 0 0 8px; font-size: 22px; font-weight: 600; }
+.archive-editor-form label { display: grid; gap: 7px; color: #555; font-size: 12px; }
+.archive-editor-form input:not([type="file"]), .archive-editor-form textarea, .archive-editor-form select { width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid #e1e0db; border-radius: 0; background: #fff; color: #222; font: inherit; font-size: 14px; }
+.archive-editor-form textarea { resize: vertical; }
+.archive-manage-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 0; border-bottom: 1px solid #efeee9; font-size: 12px; }
+.archive-manage-row > span { overflow-wrap: anywhere; }
+.archive-manage-row > div { display: flex; gap: 3px; flex-shrink: 0; }
+.archive-poster-card img { height: auto; object-fit: contain; }
+.archive-poster-card { aspect-ratio: auto; overflow: visible; }
+.archive-poster-card.is-awakening { opacity: 1; filter: grayscale(0); }
+@media (max-width: 650px) {
+  .archive-detail-page { padding: 104px 20px 58px; }
+  .archive-back-button, .archive-detail-star { top: 72px; }
+  .archive-action-menu { top: 104px; right: 20px; }
+  .archive-film-header { margin-bottom: 52px; }
+  .archive-film-header h1 { font-size: clamp(42px, 12vw, 68px); }
+  .archive-film-header h2 { font-size: clamp(32px, 9vw, 54px); }
+  .archive-film-meta { gap: 20px; margin-top: 32px; }
+  .archive-film-meta h3 { font-size: 14px; }
+  .archive-film-meta p { font-size: 13px; }
+  .archive-film-content { gap: 46px; }
+  .archive-content-item { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .archive-content-item.is-reversed { direction: ltr; }
+  .archive-content-item.is-reversed.is-image { direction: ltr; }
+  .archive-content-item > img { max-height: none; }
+  .archive-content-text { font-size: 14px; }
+  .archive-neighbor-nav { margin-top: 70px; }
+  .archive-neighbor { width: 82px; }
+}
