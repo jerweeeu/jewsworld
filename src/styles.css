@@ -1785,3 +1785,86 @@ input:focus-visible {
   .city-trip-info h3,
   .city-trip-info > p { font-size: 12px; }
 }
+
+
+/* Final typography refinements: keep the same site typeface as Home. */
+.home-copy,
+.about-page p,
+.city-trip-info h3,
+.city-trip-info > p,
+.view-more-button,
+.trip-detail-heading h1,
+.trip-detail-heading p,
+.trip-photo-tile .trip-photo-caption,
+.photo-title,
+.photo-date,
+.diary-selected-date {
+  font-family: Helvetica, Inter, Arial, sans-serif !important;
+}
+
+/* Keep trip-list title/date comfortably readable; view more matches the date size. */
+.city-trip-info h3 {
+  font-size: 16px !important;
+  line-height: 1.35;
+  font-weight: 700;
+}
+.city-trip-info > p {
+  font-size: 12px !important;
+  line-height: 1.5;
+  color: #999;
+}
+.city-trip-actions .view-more-button,
+.view-more-button {
+  font-size: 12px !important;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+/* Trip detail heading and date stay larger than the compact card typography. */
+.trip-detail-heading h1 {
+  font-size: clamp(28px, 4vw, 42px) !important;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.trip-detail-heading p {
+  font-size: 14px !important;
+  line-height: 1.5;
+  color: #999;
+}
+
+/* Photo subtitles use the Home typeface, align with the photo, and have no frame. */
+.trip-photo-tile .trip-photo-caption,
+.photo-title {
+  display: block;
+  padding: 10px 0 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: #111 !important;
+  font-size: 15px !important;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.photo-date {
+  font-size: 13px !important;
+  line-height: 1.4;
+}
+.diary-selected-date {
+  font-size: 13px !important;
+  line-height: 1.4;
+}
+
+/* Map trip photos do not display dates; only Diary photos have photo dates. */
+.trip-photo-tile .trip-photo-date { display: none !important; }
+
+@media (max-width: 600px) {
+  .city-trip-info h3 { font-size: 16px !important; }
+  .city-trip-info > p, .city-trip-actions .view-more-button { font-size: 12px !important; }
+  .trip-detail-heading p { font-size: 14px !important; }
+  .trip-photo-tile .trip-photo-caption, .photo-title { font-size: 15px !important; }
+  .photo-date, .diary-selected-date { font-size: 13px !important; }
+}
