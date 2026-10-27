@@ -2070,7 +2070,20 @@ input:focus-visible {
 .archive-content-item.is-reversed { direction: rtl; }
 .archive-content-item.is-reversed > * { direction: ltr; }
 .archive-content-item > img { display: block; width: 100%; height: auto; max-height: 72vh; object-fit: contain; border-radius: 3px; }
-.archive-content-text { color: #252525; font-size: clamp(15px, 1.25vw, 18px); line-height: 1.9; white-space: pre-wrap; overflow-wrap: anywhere; }
+.archive-content-text {
+color: #b9b9c5;
+font-size: clamp(15px, 1.4vw, 20px);
+line-height: 1.28;
+font-weight: 650;
+white-space: pre-wrap;
+overflow-wrap: anywhere;
+transition: color 0.2s ease;
+}
+
+.archive-content-text:focus,
+.archive-content-text:focus-within {
+color: #111111;
+}
 .archive-item-controls { position: absolute; top: 8px; right: 8px; z-index: 4; display: flex; gap: 4px; direction: ltr; }
 .archive-item-controls button, .archive-manage-row button { width: 30px; height: 30px; border: 0; background: rgba(255,255,255,.94); color: #333; font-size: 17px; cursor: pointer; }
 .archive-item-controls button:disabled, .archive-manage-row button:disabled { opacity: .3; cursor: default; }
@@ -2130,7 +2143,27 @@ input:focus-visible {
   .archive-content-item.is-reversed { direction: ltr; }
   .archive-content-item.is-reversed.is-image { direction: ltr; }
   .archive-content-item > img { max-height: none; }
-  .archive-content-text { font-size: 14px; }
+  .archive-content-text {
+
+    color: #b9b9c5;
+
+    font-size: clamp(15px, 1.4vw, 20px);
+
+    line-height: 1.28;
+
+    font-weight: 650;
+
+  }
+
+  .archive-content-text:focus,
+
+  .archive-content-text:focus-within {
+
+    color: #111111;
+
+  }
+
+}
   .archive-neighbor-nav { padding: 0 8px; }
   .archive-neighbor { width: 58px; }
   .archive-neighbor img { max-height: 22vh; }
