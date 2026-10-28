@@ -1332,6 +1332,7 @@ function App() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [session, setSession] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [error, setError] = useState('');
 
   /* Restore login session. */
 
