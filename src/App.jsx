@@ -1996,7 +1996,7 @@ function App() {
               {active && <button type="button" className="map-star-button nav-star-button" onClick={starAction} aria-label={`${navPage} options`} title={navPage === 'about' ? (isAdmin ? 'Log out' : 'Log in') : navPage === 'map' ? 'Add or modify a trip' : navPage === 'archive' ? 'Add a movie' : 'Home'}>★</button>}
             </div>
           );
-        })}
+        }}
       </header>
 
       {/* Home */}
