@@ -319,36 +319,114 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
   const [editTripSaving, setEditTripSaving] = useState(false);
 
   async function loadTrips() {
-    if (!supabase) return;
-    setLoadingTrips(true);
-    const { data, error } = await supabase
-      .from('travel_trips')
-      .select('id, city_name, city_display_name, latitude, longitude, title, start_date, end_date, description, cover_storage_path, status, author_id, created_at, travel_photos(id, storage_path, title, sort_order)')
-      .eq('status', 'published')
-      .order('start_date', { ascending: false });
-    if (error) {
-      setError(error.message);
-      setTrips([]);
-    } else {
-      const normalized = (data || []).map((trip) => {
-        const photos = [...(trip.travel_photos || [])]
-          .sort((a, b) => a.sort_order - b.sort_order)
-          .map((photo) => ({
-            ...photo,
-            url: supabase.storage.from('travel-photos').getPublicUrl(photo.storage_path).data.publicUrl,
-          }));
-        return {
-          ...trip,
-          photos,
-          coverUrl: trip.cover_storage_path
-            ? supabase.storage.from('travel-photos').getPublicUrl(trip.cover_storage_path).data.publicUrl
-            : photos[0]?.url || '',
-        };
-      });
-      setTrips(normalized);
-    }
+
+  if (!supabase) {
+
     setLoadingTrips(false);
+
+    setError('Supabase is not configured.');
+
+    return;
+
   }
+
+  setLoadingTrips(true);
+
+  try {
+
+    const { data, error } = await supabase
+
+      .from('travel_trips')
+
+      .select(
+
+        'id, city_name, city_display_name, latitude, longitude, title, start_date, end_date, description, cover_storage_path, status, author_id, created_at, travel_photos(id, storage_path, title, sort_order)'
+
+      )
+
+      .eq('status', 'published')
+
+      .order('start_date', { ascending: false });
+
+    if (error) {
+
+      console.error('Map data query failed:', error);
+
+      setError(
+
+        `Map data error: ${error.message || 'Unknown database error'}`
+
+      );
+
+      setTrips([]);
+
+      return;
+
+    }
+
+    const normalized = (data || []).map((trip) => {
+
+      const photos = [...(trip.travel_photos || [])]
+
+        .sort((a, b) => a.sort_order - b.sort_order)
+
+        .map((photo) => ({
+
+          ...photo,
+
+          url: supabase.storage
+
+            .from('travel-photos')
+
+            .getPublicUrl(photo.storage_path).data.publicUrl,
+
+        }));
+
+      return {
+
+        ...trip,
+
+        photos,
+
+        coverUrl: trip.cover_storage_path
+
+          ? supabase.storage
+
+              .from('travel-photos')
+
+              .getPublicUrl(trip.cover_storage_path).data.publicUrl
+
+          : photos[0]?.url || '',
+
+      };
+
+    });
+
+    setTrips(normalized);
+
+  } catch (error) {
+
+    console.error('Map network request failed:', error);
+
+    setTrips([]);
+
+    setError(
+
+      `Map loading failed: ${
+
+        error?.message || 'Please check your network connection.'
+
+      }`
+
+    );
+
+  } finally {
+
+    setLoadingTrips(false);
+
+  }
+
+}
 
   useEffect(() => { loadTrips(); }, [supabase]);
 
