@@ -167,7 +167,135 @@ function DateWheel({
     </div>
   );
 }
+function BookWheel({ books, value, onChange, onOpenCurrent }) {
+  const wheelRef = useRef(null);
+  const timerRef = useRef(null);
+  const wheelTimerRef = useRef(null);
+  const cooldownRef = useRef(false);
+  const ROW_HEIGHT = 48;
 
+  useEffect(() => {
+    const wheel = wheelRef.current;
+    if (!wheel) return;
+
+    wheel.scrollTop = value * ROW_HEIGHT;
+  }, [value]);
+
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(timerRef.current);
+      window.clearTimeout(wheelTimerRef.current);
+    };
+  }, []);
+
+  function handleScroll() {
+    const wheel = wheelRef.current;
+    if (!wheel) return;
+
+    window.clearTimeout(timerRef.current);
+
+    timerRef.current = window.setTimeout(() => {
+      const index = Math.max(
+        0,
+        Math.min(
+          books.length - 1,
+          Math.round(wheel.scrollTop / ROW_HEIGHT)
+        )
+      );
+
+      onChange(index);
+      wheel.scrollTo({
+        top: index * ROW_HEIGHT,
+        behavior: 'smooth',
+      });
+    }, 100);
+  }
+
+  function handleWheel(event) {
+    event.preventDefault();
+    if (!wheelRef.current || cooldownRef.current) return;
+
+    cooldownRef.current = true;
+
+    const direction = event.deltaY > 0 ? 1 : -1;
+    const nextIndex = Math.max(
+      0,
+      Math.min(books.length - 1, value + direction)
+    );
+
+    if (nextIndex !== value) {
+      onChange(nextIndex);
+      wheelRef.current.scrollTo({
+        top: nextIndex * ROW_HEIGHT,
+        behavior: 'smooth',
+      });
+    }
+
+    wheelTimerRef.current = window.setTimeout(() => {
+      cooldownRef.current = false;
+    }, 260);
+  }
+
+  return (
+    <section className="book-wheel-wrap" aria-label="Choose a book">
+      <div
+        className="book-wheel"
+        ref={wheelRef}
+        onScroll={handleScroll}
+        onWheel={handleWheel}
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+
+          event.preventDefault();
+
+          const direction = event.key === 'ArrowDown' ? 1 : -1;
+          const nextIndex = Math.max(
+            0,
+            Math.min(books.length - 1, value + direction)
+          );
+
+          onChange(nextIndex);
+          wheelRef.current?.scrollTo({
+            top: nextIndex * ROW_HEIGHT,
+            behavior: 'smooth',
+          });
+        }}
+      >
+        {books.map((book, index) => (
+          <button
+            type="button"
+            key={book.title}
+            className={`book-wheel-row ${
+              index === value ? 'is-selected' : ''
+            }`}
+            onClick={() => {
+              if (index === value) {
+                onOpenCurrent();
+              } else {
+                onChange(index);
+                wheelRef.current?.scrollTo({
+                  top: index * ROW_HEIGHT,
+                  behavior: 'smooth',
+                });
+              }
+            }}
+          >
+            <span className="book-year">
+              {index === value ? book.year : ''}
+            </span>
+
+            <span className="book-title">{book.title}</span>
+
+            <span className="book-author">
+              {index === value ? book.author : ''}
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
 /* ========================================
    Administrator login
 ======================================== */
@@ -2046,6 +2174,10 @@ const books = [
     window.dispatchEvent(new Event('jewsworld-archive-home'));
   }
 
+  if (navPage === 'forum') {
+    setOpenedBook(false);
+  }
+
   setPage(navPage);
 }
               }}>{navPage}</button>
@@ -2093,92 +2225,19 @@ const books = [
       {/* Forum: vertical book wheel */}
 {page === 'forum' && !openedBook && (
   <main className="forum-page">
-    <section
-  className="book-wheel"
-  aria-label="Choose a book"
-  onWheel={(event) => {
-    if (Math.abs(event.deltaY) < 5) return;
-
-    event.preventDefault();
-
-    setSelectedBookIndex((current) =>
-      Math.max(
-        0,
-        Math.min(
-          books.length - 1,
-          current + (event.deltaY > 0 ? 1 : -1)
-        )
-      )
-    );
-  }}
-  onTouchStart={(event) => {
-    event.currentTarget.dataset.touchY =
-      String(event.touches[0].clientY);
-  }}
-  onTouchEnd={(event) => {
-    const startY = Number(event.currentTarget.dataset.touchY);
-    const endY = event.changedTouches[0].clientY;
-    const distance = startY - endY;
-
-    if (Math.abs(distance) < 25) return;
-
-    setSelectedBookIndex((current) =>
-      Math.max(
-        0,
-        Math.min(
-          books.length - 1,
-          current + (distance > 0 ? 1 : -1)
-        )
-      )
-    );
-  }}
->
-      {books.map((book, index) => {
-        const offset = index - selectedBookIndex;
-
-        return (
-          <button
-            type="button"
-            key={book.title}
-            className={`book-wheel-row ${
-              index === selectedBookIndex ? 'is-selected' : ''
-            }`}
-            style={{ '--book-offset': offset }}
-            onMouseEnter={() => setSelectedBookIndex(index)}
-            onClick={() => {
-              if (index !== selectedBookIndex) {
-                setSelectedBookIndex(index);
-              } else {
-                setOpenedBook(true);
-              }
-            }}
-          >
-            <span className="book-year">
-              {index === selectedBookIndex ? book.year : ''}
-            </span>
-
-            <span className="book-title">
-              {book.title}
-            </span>
-
-            <span className="book-author">
-              {index === selectedBookIndex ? book.author : ''}
-            </span>
-          </button>
-        );
-      })}
-    </section>
+    <BookWheel
+      books={books}
+      value={selectedBookIndex}
+      onChange={setSelectedBookIndex}
+      onOpenCurrent={() => setOpenedBook(true)}
+    />
   </main>
 )}
 
 {/* Empty book detail page */}
 {page === 'forum' && openedBook && (
-  <main
-    className="forum-book-detail"
-    aria-label="Book detail"
-  />
+  <main className="forum-book-detail" aria-label="Book detail" />
 )}
-
       {/* Gallery */}
       {page === 'gallery' && (
         <main className="gallery-page">
