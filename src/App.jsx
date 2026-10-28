@@ -168,133 +168,169 @@ function DateWheel({
   );
 }
 function BookWheel({ books, value, onChange, onOpenCurrent }) {
-  const wheelRef = useRef(null);
-  const timerRef = useRef(null);
-  const wheelTimerRef = useRef(null);
-  const cooldownRef = useRef(false);
-  const ROW_HEIGHT = 48;
+const wheelRef = useRef(null);
+const timerRef = useRef(null);
+const wheelTimerRef = useRef(null);
+const cooldownRef = useRef(false);
 
-  useEffect(() => {
-    const wheel = wheelRef.current;
-    if (!wheel) return;
+const ROW_HEIGHT = 48;
 
-    wheel.scrollTop = value * ROW_HEIGHT;
-  }, [value]);
+// 选中项改变时，让它始终停留在选择区域的中央。
+useEffect(() => {
+const wheel = wheelRef.current;
+if (!wheel || !books.length) return;
 
-  useEffect(() => {
-    return () => {
-      window.clearTimeout(timerRef.current);
-      window.clearTimeout(wheelTimerRef.current);
-    };
-  }, []);
+wheel.scrollTo({
+  top: value * ROW_HEIGHT,
+  behavior: 'auto',
+});
 
-  function handleScroll() {
-    const wheel = wheelRef.current;
-    if (!wheel) return;
+}, [value, books.length]);
 
-    window.clearTimeout(timerRef.current);
+// 清理定时器。
+useEffect(() => {
+return () => {
+window.clearTimeout(timerRef.current);
+window.clearTimeout(wheelTimerRef.current);
+};
+}, []);
 
-    timerRef.current = window.setTimeout(() => {
-      const index = Math.max(
-        0,
-        Math.min(
-          books.length - 1,
-          Math.round(wheel.scrollTop / ROW_HEIGHT)
-        )
-      );
+// 手指滑动结束后，自动吸附到最近的一本书。
+function handleScroll() {
+const wheel = wheelRef.current;
+if (!wheel || !books.length) return;
 
-      onChange(index);
-      wheel.scrollTo({
-        top: index * ROW_HEIGHT,
-        behavior: 'smooth',
-      });
-    }, 100);
-  }
+window.clearTimeout(timerRef.current);
 
-  function handleWheel(event) {
-    event.preventDefault();
-    if (!wheelRef.current || cooldownRef.current) return;
-
-    cooldownRef.current = true;
-
-    const direction = event.deltaY > 0 ? 1 : -1;
-    const nextIndex = Math.max(
-      0,
-      Math.min(books.length - 1, value + direction)
-    );
-
-    if (nextIndex !== value) {
-      onChange(nextIndex);
-      wheelRef.current.scrollTo({
-        top: nextIndex * ROW_HEIGHT,
-        behavior: 'smooth',
-      });
-    }
-
-    wheelTimerRef.current = window.setTimeout(() => {
-      cooldownRef.current = false;
-    }, 260);
-  }
-
-  return (
-    <section className="book-wheel-wrap" aria-label="Choose a book">
-      <div
-        className="book-wheel"
-        ref={wheelRef}
-        onScroll={handleScroll}
-        onWheel={handleWheel}
-        tabIndex={0}
-        onKeyDown={(event) => {
-          if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
-
-          event.preventDefault();
-
-          const direction = event.key === 'ArrowDown' ? 1 : -1;
-          const nextIndex = Math.max(
-            0,
-            Math.min(books.length - 1, value + direction)
-          );
-
-          onChange(nextIndex);
-          wheelRef.current?.scrollTo({
-            top: nextIndex * ROW_HEIGHT,
-            behavior: 'smooth',
-          });
-        }}
-      >
-        {books.map((book, index) => (
-          <button
-            type="button"
-            key={book.title}
-            className={`book-wheel-row ${
-              index === value ? 'is-selected' : ''
-            }`}
-            onClick={() => {
-              if (index === value) {
-                onOpenCurrent();
-              } else {
-                onChange(index);
-                wheelRef.current?.scrollTo({
-                  top: index * ROW_HEIGHT,
-                  behavior: 'smooth',
-                });
-              }
-            }}
-          >
-            <span className="book-year">
-              {index === value ? book.year : ''}
-            </span>
-
-            <span className="book-title">{book.title}</span>
-
-            <span className="book-author">
-              {index === value ? book.author : ''}
-            </span>
-          </button>
-        ))}
-      </div>
-    </section>
+timerRef.current = window.setTimeout(() => {
+  const index = Math.max(
+    0,
+    Math.min(
+      books.length - 1,
+      Math.round(wheel.scrollTop / ROW_HEIGHT)
+    )
   );
+
+  wheel.scrollTo({
+    top: index * ROW_HEIGHT,
+    behavior: 'smooth',
+  });
+
+  if (index !== value) {
+    onChange(index);
+  }
+}, 100);
+
+}
+
+// 鼠标滚轮每次切换一本书。
+function handleWheel(event) {
+event.preventDefault();
+
+if (!wheelRef.current || cooldownRef.current || !books.length) {
+  return;
+}
+
+cooldownRef.current = true;
+
+const direction = event.deltaY > 0 ? 1 : -1;
+const nextIndex = Math.max(
+  0,
+  Math.min(books.length - 1, value + direction)
+);
+
+if (nextIndex !== value) {
+  onChange(nextIndex);
+}
+
+wheelTimerRef.current = window.setTimeout(() => {
+  cooldownRef.current = false;
+}, 260);
+
+}
+
+// 支持键盘上下方向键。
+function handleKeyDown(event) {
+if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
+return;
+}
+
+event.preventDefault();
+
+const direction = event.key === 'ArrowDown' ? 1 : -1;
+const nextIndex = Math.max(
+  0,
+  Math.min(books.length - 1, value + direction)
+);
+
+if (nextIndex !== value) {
+  onChange(nextIndex);
+}
+
+}
+
+if (!books.length) {
+return (
+<section className="book-wheel-wrap">
+<p className="book-wheel-empty">No books yet.</p>
+</section>
+);
+}
+
+return (
+<section className="book-wheel-wrap" aria-label="Choose a book">
+<div
+     className="book-wheel"
+     ref={wheelRef}
+     onScroll={handleScroll}
+     onWheel={handleWheel}
+     onKeyDown={handleKeyDown}
+     tabIndex={0}
+     aria-label="Book selection"
+   >
+{/* 顶部留白：让第一本书也能停在中央。 */}
+<div className="book-wheel-spacer" aria-hidden="true" />
+
+    {books.map((book, index) => {
+      const isSelected = index === value;
+
+      return (
+        <button
+          type="button"
+          key={book.id ?? `${book.title}-${index}`}
+          className={`book-wheel-row ${
+            isSelected ? 'is-selected' : ''
+          }`}
+          onClick={() => {
+            if (isSelected) {
+              onOpenCurrent?.();
+            } else {
+              onChange(index);
+            }
+          }}
+          aria-pressed={isSelected}
+        >
+          <span className="book-year">
+            {book.year ?? ''}
+          </span>
+
+          <span className="book-title">
+            {book.title || 'Untitled'}
+          </span>
+
+          <span className="book-author">
+            {book.author || ''}
+          </span>
+        </button>
+      );
+    })}
+
+    {/* 底部留白：让最后一本书也能停在中央。 */}
+    <div className="book-wheel-spacer" aria-hidden="true" />
+  </div>
+</section>
+
+);
 }
 /* ========================================
    Administrator login
