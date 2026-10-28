@@ -985,6 +985,7 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [form, setForm] = useState({ title: '', translated_title: '', info_heading: 'Actor', info_content: '', trailer_note: '' });
   const [itemForm, setItemForm] = useState({ type: 'text', text: '' });
+  const [editingItemId, setEditingItemId] = useState(null);
   const startX = useRef(null);
 
   async function loadMovies() {
@@ -1150,6 +1151,66 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
     await loadItems(detailMovie.id);
   }
 
+  async function saveManagedItem(event, item) {
+  event.preventDefault();
+
+  if (!supabase || !isAdmin || !detailMovie) return;
+
+  setSaving(true);
+  setError?.('');
+
+  let newPath = '';
+
+  try {
+    const updates = {};
+
+    if (item.item_type === 'text') {
+      const nextText = String(itemForm.text || '').trim();
+
+      if (!nextText) {
+        throw new Error('Please enter some text.');
+      }
+
+      updates.content = nextText;
+    } else if (itemFile) {
+      newPath = await uploadFile(itemFile, 'still');
+      updates.storage_path = newPath;
+    }
+
+    const { data, error } = await supabase
+      .from('archive_items')
+      .update(updates)
+      .eq('id', item.id)
+      .select('*')
+      .single();
+
+    if (error) throw error;
+
+    if (newPath && item.storage_path) {
+      const { error: removeError } = await supabase
+        .storage.from('movie-posters')
+        .remove([item.storage_path]);
+
+      if (removeError) {
+        console.error('Old photo cleanup failed:', removeError);
+      }
+    }
+
+    setItemFile(null);
+    setItemForm({ type: 'text', text: '' });
+    setEditMode('manage-content');
+    await loadItems(detailMovie.id);
+  } catch (error) {
+    setError(error.message || 'Could not update this content.');
+
+    if (newPath) {
+      await supabase.storage.from('movie-posters').remove([newPath]);
+    }
+  } finally {
+    setSaving(false);
+  }
+}
+
   async function shiftItem(index, direction) {
     const target = index + direction;
     if (!isAdmin || target < 0 || target >= items.length) return;
@@ -1252,7 +1313,172 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
           <button className="archive-upload-submit" disabled={saving}>{saving ? 'saving…' : 'Save changes'}</button></form>}
         {editMode === 'poster' && <form onSubmit={changePoster} className="archive-editor-form"><h2>Change Poster</h2><label className="archive-upload-prompt">{posterFile ? posterFile.name : 'Choose a new poster'}<input type="file" accept="image/*" required onChange={(e) => setPosterFile(e.target.files?.[0] || null)} /></label><button className="archive-upload-submit" disabled={saving || !posterFile}>{saving ? 'saving…' : 'Change poster'}</button></form>}
         {editMode === 'add-content' && <form onSubmit={saveItem} className="archive-editor-form"><h2>Add Photo &amp; Text</h2><label>Content type<select value={itemForm.type} onChange={(e) => setItemForm({ type: e.target.value, text: '' })}><option value="text">Text</option><option value="image">Photo</option></select></label>{itemForm.type === 'text' ? <label>Text<textarea className="archive-information-content-input archive-content-text-input" rows="6" value={itemForm.text} onChange={(e) => setItemForm({ ...itemForm, text: e.target.value })} required /></label> : <label className="archive-upload-prompt">{itemFile ? itemFile.name : 'Choose a photo'}<input type="file" accept="image/*" required onChange={(e) => setItemFile(e.target.files?.[0] || null)} /></label>}<button className="archive-upload-submit" disabled={saving}>{saving ? 'saving…' : 'Add to film'}</button></form>}
-        {editMode === 'manage-content' && <div className="archive-editor-form"><h2>Manage Content</h2>{items.length === 0 && <p>No content yet.</p>}{items.map((item, index) => <div className="archive-manage-row" key={item.id}><span>{index + 1}. {item.item_type === 'image' ? 'Photo' : (item.content || '').slice(0, 55) || 'Text'}</span></div>)}<button className="archive-upload-submit" onClick={() => { setEditMode('add-content'); setItemForm({ type: 'text', text: '' }); }}>Add content</button></div>}
+        {editMode === 'edit-content' && (
+  <form
+    className="archive-editor-form"
+    onSubmit={(event) => {
+      const item = items.find((entry) => entry.id === editingItemId);
+
+      if (!item) {
+        event.preventDefault();
+        setError('Could not find this content.');
+        return;
+      }
+
+      saveManagedItem(event, item);
+    }}
+  >
+    <h2>Edit Content</h2>
+
+    {(() => {
+      const item = items.find((entry) => entry.id === editingItemId);
+
+      if (!item) return <p>Content not found.</p>;
+
+      if (item.item_type === 'text') {
+        return (
+          <label>
+            Text
+            <textarea
+              rows="8"
+              value={itemForm.text}
+              onChange={(event) =>
+                setItemForm({
+                  ...itemForm,
+                  text: event.target.value,
+                })
+              }
+              required
+            />
+          </label>
+        );
+      }
+
+      return (
+        <>
+          <p>Choose a replacement photo, or leave this empty to keep the current photo.</p>
+
+          {item.image_url && (
+            <img
+              src={item.image_url}
+              alt="Current content"
+              className="archive-manage-thumbnail"
+            />
+          )}
+
+          <label className="archive-upload-prompt">
+            {itemFile ? itemFile.name : 'Choose replacement photo'}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(event) =>
+                setItemFile(event.target.files?.[0] || null)
+              }
+            />
+          </label>
+        </>
+      );
+    })()}
+
+    <button
+      type="submit"
+      className="archive-upload-submit"
+      disabled={saving}
+    >
+      {saving ? 'saving…' : 'Save changes'}
+    </button>
+
+    <button
+      type="button"
+      onClick={() => setEditMode('manage-content')}
+    >
+      Cancel
+    </button>
+  </form>
+)}
+        {editMode === 'manage-content' && (
+  <div className="archive-editor-form archive-manage-editor">
+    <h2>Manage Content</h2>
+
+    {items.length === 0 && <p>No content yet.</p>}
+
+    {items.map((item, index) => (
+      <div className="archive-manage-row" key={item.id}>
+        <div className="archive-manage-preview">
+          <strong>
+            {index + 1}. {item.item_type === 'image' ? 'Photo' : 'Text'}
+          </strong>
+
+          {item.item_type === 'image' ? (
+            <img
+              src={item.image_url}
+              alt={`Content ${index + 1}`}
+              className="archive-manage-thumbnail"
+            />
+          ) : (
+            <p>{(item.content || '').slice(0, 100)}</p>
+          )}
+        </div>
+
+        <div className="archive-manage-actions">
+          <button
+            type="button"
+            disabled={index === 0 || saving}
+            onClick={() => shiftItem(index, -1)}
+          >
+            ↑ Move up
+          </button>
+
+          <button
+            type="button"
+            disabled={index === items.length - 1 || saving}
+            onClick={() => shiftItem(index, 1)}
+          >
+            ↓ Move down
+          </button>
+
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => {
+              setEditingItemId(item.id);
+              setItemForm({
+                type: item.item_type,
+                text: item.content || '',
+              });
+              setItemFile(null);
+              setEditMode('edit-content');
+            }}
+          >
+            Edit
+          </button>
+
+          <button
+            type="button"
+            className="archive-delete-action"
+            disabled={saving}
+            onClick={() => deleteItem(item)}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    ))}
+
+    <button
+      type="button"
+      className="archive-upload-submit"
+      onClick={() => {
+        setEditingItemId(null);
+        setItemFile(null);
+        setItemForm({ type: 'text', text: '' });
+        setEditMode('add-content');
+      }}
+    >
+      Add content
+    </button>
+  </div>
+)}
       </section></div>}
     </main>
   );
@@ -1264,6 +1490,16 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
 
 function App() {
   const [page, setPage] = useState('home');
+  const [selectedBookIndex, setSelectedBookIndex] = useState(0);
+const [openedBook, setOpenedBook] = useState(false);
+
+const books = [
+  { title: 'Book A', year: '2024', author: 'Author A' },
+  { title: 'Book B', year: '2023', author: 'Author B' },
+  { title: 'Book C', year: '2022', author: 'Author C' },
+  { title: 'Book D', year: '2021', author: 'Author D' },
+  { title: 'Book E', year: '2020', author: 'Author E' },
+];
   const [mapViewKey, setMapViewKey] = useState(0);
 
   const [loginOpen, setLoginOpen] = useState(false);
@@ -1780,8 +2016,8 @@ function App() {
   return (
     <div className="site-shell">
       <header className="site-header">
-        {['home', 'map', 'archive', 'diary', 'about'].map((navPage) => {
-          const activeNavPage = page === 'gallery' ? 'diary' : page;
+        {['home', 'map', 'archive', 'forum', 'about'].map((navPage) => {
+          const activeNavPage = page === 'gallery' ? 'forum' : page;
           const active = activeNavPage === navPage;
           const starAction = () => {
             if (navPage === 'home') return;
@@ -1795,8 +2031,8 @@ function App() {
               window.dispatchEvent(new Event('jewsworld-map-star'));
             } else if (navPage === 'archive') {
               window.dispatchEvent(new Event('jewsworld-archive-star'));
-            } else if (navPage === 'diary') {
-              openDiaryModal(page === 'gallery' ? 'modify' : 'add');
+            } else if (navPage === 'forum') {
+              // Book management will be added here later.
             }
           };
           return (
@@ -1813,7 +2049,7 @@ function App() {
   setPage(navPage);
 }
               }}>{navPage}</button>
-              {active && <button type="button" className="map-star-button nav-star-button" onClick={starAction} aria-label={`${navPage} options`} title={navPage === 'about' ? (isAdmin ? 'Log out' : 'Log in') : navPage === 'map' ? 'Add or modify a trip' : navPage === 'archive' ? 'Add a movie' : navPage === 'diary' ? 'Add or manage a diary entry' : 'Home'}>★</button>}
+              {active && <button type="button" className="map-star-button nav-star-button" onClick={starAction} aria-label={`${navPage} options`} title={navPage === 'about' ? (isAdmin ? 'Log out' : 'Log in') : navPage === 'map' ? 'Add or modify a trip' : navPage === 'archive' ? 'Add a movie' : navPage === 'forum' ? 'Manage books' : 'Home'}>★</button>}
             </div>
           );
         })}
@@ -1854,45 +2090,94 @@ function App() {
       {/* Archive */}
       {page === 'archive' && <ArchivePage supabase={supabase} isAdmin={isAdmin} session={session} setError={setError} />}
 
-      {/* Diary */}
-      {page === 'diary' && (
-        <main className="diary-page">
-          <section
-            className="date-picker"
-            aria-label="Choose a date"
+      {/* Forum: vertical book wheel */}
+{page === 'forum' && !openedBook && (
+  <main className="forum-page">
+    <section
+  className="book-wheel"
+  aria-label="Choose a book"
+  onWheel={(event) => {
+    if (Math.abs(event.deltaY) < 5) return;
+
+    event.preventDefault();
+
+    setSelectedBookIndex((current) =>
+      Math.max(
+        0,
+        Math.min(
+          books.length - 1,
+          current + (event.deltaY > 0 ? 1 : -1)
+        )
+      )
+    );
+  }}
+  onTouchStart={(event) => {
+    event.currentTarget.dataset.touchY =
+      String(event.touches[0].clientY);
+  }}
+  onTouchEnd={(event) => {
+    const startY = Number(event.currentTarget.dataset.touchY);
+    const endY = event.changedTouches[0].clientY;
+    const distance = startY - endY;
+
+    if (Math.abs(distance) < 25) return;
+
+    setSelectedBookIndex((current) =>
+      Math.max(
+        0,
+        Math.min(
+          books.length - 1,
+          current + (distance > 0 ? 1 : -1)
+        )
+      )
+    );
+  }}
+>
+      {books.map((book, index) => {
+        const offset = index - selectedBookIndex;
+
+        return (
+          <button
+            type="button"
+            key={book.title}
+            className={`book-wheel-row ${
+              index === selectedBookIndex ? 'is-selected' : ''
+            }`}
+            style={{ '--book-offset': offset }}
+            onMouseEnter={() => setSelectedBookIndex(index)}
+            onClick={() => {
+              if (index !== selectedBookIndex) {
+                setSelectedBookIndex(index);
+              } else {
+                setOpenedBook(true);
+              }
+            }}
           >
-            <div className="date-columns">
-              <DateWheel
-                label="Year"
-                value={year}
-                values={yearValues}
-                onChange={changeYear}
-                onOpenCurrent={() => { setLightboxIndex(null); setPage('gallery'); loadPosts(); }}
-              />
+            <span className="book-year">
+              {index === selectedBookIndex ? book.year : ''}
+            </span>
 
-              <div className="month-column">
-                <DateWheel
-                  label="Month"
-                  value={month}
-                  values={monthValues}
-                  onChange={changeMonth}
-                  onOpenCurrent={() => { setLightboxIndex(null); setPage('gallery'); loadPosts(); }}
-                  pad
-                />
-              </div>
+            <span className="book-title">
+              {book.title}
+            </span>
 
-              <DateWheel
-                label="Day"
-                value={day}
-                values={dayValues}
-                onChange={setDay}
-                onOpenCurrent={() => { setLightboxIndex(null); setPage('gallery'); loadPosts(); }}
-                pad
-              />
-            </div>
-          </section>
-        </main>
-      )}
+            <span className="book-author">
+              {index === selectedBookIndex ? book.author : ''}
+            </span>
+          </button>
+        );
+      })}
+    </section>
+  </main>
+)}
+
+{/* Empty book detail page */}
+{page === 'forum' && openedBook && (
+  <main
+    className="forum-book-detail"
+    aria-label="Book detail"
+  />
+)}
 
       {/* Gallery */}
       {page === 'gallery' && (
