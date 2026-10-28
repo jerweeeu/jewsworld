@@ -167,171 +167,7 @@ function DateWheel({
     </div>
   );
 }
-function BookWheel({ books, value, onChange, onOpenCurrent }) {
-const wheelRef = useRef(null);
-const timerRef = useRef(null);
-const wheelTimerRef = useRef(null);
-const cooldownRef = useRef(false);
 
-const ROW_HEIGHT = 48;
-
-// 选中项改变时，让它始终停留在选择区域的中央。
-useEffect(() => {
-const wheel = wheelRef.current;
-if (!wheel || !books.length) return;
-
-wheel.scrollTo({
-  top: value * ROW_HEIGHT,
-  behavior: 'auto',
-});
-
-}, [value, books.length]);
-
-// 清理定时器。
-useEffect(() => {
-return () => {
-window.clearTimeout(timerRef.current);
-window.clearTimeout(wheelTimerRef.current);
-};
-}, []);
-
-// 手指滑动结束后，自动吸附到最近的一本书。
-function handleScroll() {
-const wheel = wheelRef.current;
-if (!wheel || !books.length) return;
-
-window.clearTimeout(timerRef.current);
-
-timerRef.current = window.setTimeout(() => {
-  const index = Math.max(
-    0,
-    Math.min(
-      books.length - 1,
-      Math.round(wheel.scrollTop / ROW_HEIGHT)
-    )
-  );
-
-  wheel.scrollTo({
-    top: index * ROW_HEIGHT,
-    behavior: 'smooth',
-  });
-
-  if (index !== value) {
-    onChange(index);
-  }
-}, 100);
-
-}
-
-// 鼠标滚轮每次切换一本书。
-function handleWheel(event) {
-event.preventDefault();
-
-if (!wheelRef.current || cooldownRef.current || !books.length) {
-  return;
-}
-
-cooldownRef.current = true;
-
-const direction = event.deltaY > 0 ? 1 : -1;
-const nextIndex = Math.max(
-  0,
-  Math.min(books.length - 1, value + direction)
-);
-
-if (nextIndex !== value) {
-  onChange(nextIndex);
-}
-
-wheelTimerRef.current = window.setTimeout(() => {
-  cooldownRef.current = false;
-}, 260);
-
-}
-
-// 支持键盘上下方向键。
-function handleKeyDown(event) {
-if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
-return;
-}
-
-event.preventDefault();
-
-const direction = event.key === 'ArrowDown' ? 1 : -1;
-const nextIndex = Math.max(
-  0,
-  Math.min(books.length - 1, value + direction)
-);
-
-if (nextIndex !== value) {
-  onChange(nextIndex);
-}
-
-}
-
-if (!books.length) {
-return (
-<section className="book-wheel-wrap">
-<p className="book-wheel-empty">No books yet.</p>
-</section>
-);
-}
-
-return (
-<section className="book-wheel-wrap" aria-label="Choose a book">
-<div
-     className="book-wheel"
-     ref={wheelRef}
-     onScroll={handleScroll}
-     onWheel={handleWheel}
-     onKeyDown={handleKeyDown}
-     tabIndex={0}
-     aria-label="Book selection"
-   >
-{/* 顶部留白：让第一本书也能停在中央。 */}
-<div className="book-wheel-spacer" aria-hidden="true" />
-
-    {books.map((book, index) => {
-      const isSelected = index === value;
-
-      return (
-        <button
-          type="button"
-          key={book.id ?? `${book.title}-${index}`}
-          className={`book-wheel-row ${
-            isSelected ? 'is-selected' : ''
-          }`}
-          onClick={() => {
-            if (isSelected) {
-              onOpenCurrent?.();
-            } else {
-              onChange(index);
-            }
-          }}
-          aria-pressed={isSelected}
-        >
-          <span className="book-year">
-            {book.year ?? ''}
-          </span>
-
-          <span className="book-title">
-            {book.title || 'Untitled'}
-          </span>
-
-          <span className="book-author">
-            {book.author || ''}
-          </span>
-        </button>
-      );
-    })}
-
-    {/* 底部留白：让最后一本书也能停在中央。 */}
-    <div className="book-wheel-spacer" aria-hidden="true" />
-  </div>
-</section>
-
-);
-}
 /* ========================================
    Administrator login
 ======================================== */
@@ -1654,68 +1490,15 @@ function ArchivePage({ supabase, isAdmin, session, setError }) {
 
 function App() {
   const [page, setPage] = useState('home');
-  const [selectedBookIndex, setSelectedBookIndex] = useState(0);
-const [openedBook, setOpenedBook] = useState(false);
 
-const books = [
-  { title: 'Book A', year: '2024', author: 'Author A' },
-  { title: 'Book B', year: '2023', author: 'Author B' },
-  { title: 'Book C', year: '2022', author: 'Author C' },
-  { title: 'Book D', year: '2021', author: 'Author D' },
-  { title: 'Book E', year: '2020', author: 'Author E' },
-];
+
   const [mapViewKey, setMapViewKey] = useState(0);
 
   const [loginOpen, setLoginOpen] = useState(false);
   const [session, setSession] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth() + 1);
-  const [day, setDay] = useState(today.getDate());
-
-  const [posts, setPosts] = useState([]);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-
-  const [uploadFile, setUploadFile] = useState(null);
-  const [caption, setCaption] = useState('');
-  const [uploading, setUploading] = useState(false);
-
-  const [lightboxIndex, setLightboxIndex] = useState(null);
-  const [diaryFormOpen, setDiaryFormOpen] = useState(false);
-  const [diaryFormMode, setDiaryFormMode] = useState('add');
-  const [diaryFormDate, setDiaryFormDate] = useState(dateKey(today.getFullYear(), today.getMonth() + 1, today.getDate()));
-  const [diaryFormFile, setDiaryFormFile] = useState(null);
-  const [diaryFormCaption, setDiaryFormCaption] = useState('');
-  const [modifyDiaryFile, setModifyDiaryFile] = useState(null);
-  const [modifyDiaryCaption, setModifyDiaryCaption] = useState('');
-  const [diaryFormSaving, setDiaryFormSaving] = useState(false);
-
-  const selectedDate = dateKey(year, month, day);
-
-  const yearValues = useMemo(
-    () =>
-      Array.from(
-        { length: 101 },
-        (_, index) => today.getFullYear() - 50 + index
-      ),
-    []
-  );
-
-  const monthValues = useMemo(
-    () => Array.from({ length: 12 }, (_, index) => index + 1),
-    []
-  );
-
-  const dayValues = useMemo(
-    () =>
-      Array.from(
-        { length: daysInMonth(year, month) },
-        (_, index) => index + 1
-      ),
-    [year, month]
-  );
 
   /* Restore login session. */
 
@@ -2180,8 +1963,8 @@ const books = [
   return (
     <div className="site-shell">
       <header className="site-header">
-        {['home', 'map', 'archive', 'forum', 'about'].map((navPage) => {
-          const activeNavPage = page === 'gallery' ? 'forum' : page;
+        {['home', 'map', 'archive', 'about'].map((navPage) => {
+          const activeNavPage = page;
           const active = activeNavPage === navPage;
           const starAction = () => {
             if (navPage === 'home') return;
@@ -2195,9 +1978,6 @@ const books = [
               window.dispatchEvent(new Event('jewsworld-map-star'));
             } else if (navPage === 'archive') {
               window.dispatchEvent(new Event('jewsworld-archive-star'));
-            } else if (navPage === 'forum') {
-              // Book management will be added here later.
-            }
           };
           return (
             <div className="nav-item-wrap" key={navPage}>
@@ -2210,14 +1990,10 @@ const books = [
     window.dispatchEvent(new Event('jewsworld-archive-home'));
   }
 
-  if (navPage === 'forum') {
-    setOpenedBook(false);
-  }
-
   setPage(navPage);
 }
               }}>{navPage}</button>
-              {active && <button type="button" className="map-star-button nav-star-button" onClick={starAction} aria-label={`${navPage} options`} title={navPage === 'about' ? (isAdmin ? 'Log out' : 'Log in') : navPage === 'map' ? 'Add or modify a trip' : navPage === 'archive' ? 'Add a movie' : navPage === 'forum' ? 'Manage books' : 'Home'}>★</button>}
+              {active && <button type="button" className="map-star-button nav-star-button" onClick={starAction} aria-label={`${navPage} options`} title={navPage === 'about' ? (isAdmin ? 'Log out' : 'Log in') : navPage === 'map' ? 'Add or modify a trip' : navPage === 'archive' ? 'Add a movie' : 'Home'}>★</button>}
             </div>
           );
         })}
@@ -2258,202 +2034,6 @@ const books = [
       {/* Archive */}
       {page === 'archive' && <ArchivePage supabase={supabase} isAdmin={isAdmin} session={session} setError={setError} />}
 
-      {/* Forum: vertical book wheel */}
-{page === 'forum' && !openedBook && (
-  <main className="forum-page">
-    <BookWheel
-      books={books}
-      value={selectedBookIndex}
-      onChange={setSelectedBookIndex}
-      onOpenCurrent={() => setOpenedBook(true)}
-    />
-  </main>
-)}
-
-{/* Empty book detail page */}
-{page === 'forum' && openedBook && (
-  <main className="forum-book-detail" aria-label="Book detail" />
-)}
-      {/* Gallery */}
-      {page === 'gallery' && (
-        <main className="gallery-page">
-
-          {error && (
-            <p className="error-message" role="alert">
-              {error}
-            </p>
-          )}
-
-          {busy && (
-            <p className="subtle-message">loading</p>
-          )}
-
-          <section className="photo-gallery" aria-label="Photos">
-            {galleryItems.map((item, index) => (
-              <article className="photo-item" key={item.id}>
-                <button
-                  className="photo-open"
-                  type="button"
-                  onClick={() => setLightboxIndex(index)}
-                  aria-label={`Open ${item.title || 'photo'}`}
-                >
-                  <img
-                    src={item.url}
-                    alt={item.title || 'Diary photo'}
-                    loading="eager"
-                    onLoad={() => console.log('Photo loaded:', item.url)}
-                    onError={(event) => {
-                    console.error('Photo failed:', item.url);
-                    console.error('Image element:', event.currentTarget);
-                    }}
-                  />
-                </button>
-
-                <p className="photo-title">{item.title || ''}</p>
-
-              </article>
-            ))}
-          </section>
-
-          <footer className="diary-selected-date">{formatDisplayDate(selectedDate)}</footer>
-
-          {lightboxIndex !== null &&
-            galleryItems[lightboxIndex] && (
-              <div
-                className="lightbox"
-                role="dialog"
-                aria-modal="true"
-                aria-label="Photo viewer"
-                onMouseDown={(event) => {
-                  if (event.target === event.currentTarget) {
-                    setLightboxIndex(null);
-                  }
-                }}
-              >
-                <button
-                  className="lightbox-close"
-                  type="button"
-                  onClick={() => setLightboxIndex(null)}
-                  aria-label="Close photo"
-                >
-                  ×
-                </button>
-
-                {galleryItems.length > 1 && (
-                  <button
-                    className="lightbox-arrow lightbox-prev"
-                    type="button"
-                    onClick={() =>
-                      setLightboxIndex(
-                        (index) =>
-                          (index - 1 + galleryItems.length) %
-                          galleryItems.length
-                      )
-                    }
-                    aria-label="Previous photo"
-                  >
-                    ‹
-                  </button>
-                )}
-
-                <button
-                  className="lightbox-image-button"
-                  type="button"
-                  onClick={() => {
-                    if (galleryItems.length > 1) {
-                      setLightboxIndex(
-                        (index) =>
-                          (index + 1) % galleryItems.length
-                      );
-                    }
-                  }}
-                  aria-label={
-                    galleryItems.length > 1
-                      ? 'Next photo'
-                      : 'Photo'
-                  }
-                >
-                  <img
-                    src={galleryItems[lightboxIndex].url}
-                    alt={
-                      galleryItems[lightboxIndex].title ||
-                      'Diary photo'
-                    }
-                  />
-                </button>
-
-                {galleryItems.length > 1 && (
-                  <button
-                    className="lightbox-arrow lightbox-next"
-                    type="button"
-                    onClick={() =>
-                      setLightboxIndex(
-                        (index) =>
-                          (index + 1) % galleryItems.length
-                      )
-                    }
-                    aria-label="Next photo"
-                  >
-                    ›
-                  </button>
-                )}
-
-                {galleryItems[lightboxIndex].title && (
-                  <p className="lightbox-caption">
-                    {galleryItems[lightboxIndex].title}
-                  </p>
-                )}
-
-                <p className="lightbox-count">
-                  {lightboxIndex + 1} / {galleryItems.length}
-                </p>
-              </div>
-            )}
-        </main>
-      )}
-
-      {diaryFormOpen && isAdmin && (
-        <div className="city-panel-shade form-shade" onClick={(event) => { if (event.target === event.currentTarget && !diaryFormSaving) setDiaryFormOpen(false); }}>
-          <section className="travel-form-panel diary-form-panel" role="dialog" aria-modal="true" aria-label={diaryFormMode === 'add' ? 'Add diary entry' : 'Modify this day'}>
-            <p className="edit-panel-kicker">ADMIN · {diaryFormMode === 'add' ? 'NEW MEMORY' : 'EDIT MEMORY'}</p>
-            <h2>{diaryFormMode === 'add' ? 'add a diary entry' : 'modify this day'}</h2>
-            {error && <p className="error-message" role="alert">{error}</p>}
-            <form className="travel-form" onSubmit={diaryFormMode === 'add' ? uploadDiaryEntry : saveDiaryModifications}>
-              <label>Date<input type="date" value={diaryFormDate} onChange={(event) => setDiaryFormDate(event.target.value)} required /></label>
-              {diaryFormMode === 'add' ? (
-                <>
-                  <label>Photo<input type="file" accept="image/*" onChange={(event) => setDiaryFormFile(event.target.files?.[0] || null)} required /></label>
-                  {diaryFormFile && <p className="selected-file-name">{diaryFormFile.name}</p>}
-                  <label>Subtitle<input type="text" maxLength={120} value={diaryFormCaption} onChange={(event) => setDiaryFormCaption(event.target.value)} placeholder="A little memory…" required /></label>
-                  <button className="travel-publish-button" type="submit" disabled={diaryFormSaving}>{diaryFormSaving ? 'saving…' : 'save diary entry'}</button>
-                </>
-              ) : (
-                <>
-                  <div className="edit-photo-list diary-edit-photo-list">
-                    <p className="edit-section-label">Photos for {diaryFormDate}</p>
-                    {modifyDiaryItems.length === 0 && <p className="subtle-message">No photos for this day yet.</p>}
-                    {modifyDiaryItems.map((item) => (
-                      <div className="edit-photo-row" key={item.photoId}>
-                        <img src={item.url} alt={item.editCaption || 'Diary photo'} />
-                        <div className="edit-photo-fields">
-                          <label>Subtitle<input value={item.editCaption} maxLength={120} onChange={(event) => setModifyDiaryItems((old) => old.map((row) => row.photoId === item.photoId ? { ...row, editCaption: event.target.value } : row))} placeholder="A little memory…" /></label>
-                          <div className="edit-photo-actions"><button type="button" className="edit-remove-photo" onClick={() => deleteDiaryPhotoItem(item)}>delete photo</button></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <label>Add a photo<input type="file" accept="image/*" onChange={(event) => setModifyDiaryFile(event.target.files?.[0] || null)} /></label>
-                  {modifyDiaryFile && <p className="selected-file-name">{modifyDiaryFile.name}</p>}
-                  {modifyDiaryFile && <label>New photo subtitle<input type="text" maxLength={120} value={modifyDiaryCaption} onChange={(event) => setModifyDiaryCaption(event.target.value)} placeholder="A little memory…" required /></label>}
-                  <button className="travel-publish-button" type="submit" disabled={diaryFormSaving}>{diaryFormSaving ? 'saving…' : 'save changes'}</button>
-                  <button className="edit-cancel-button delete-day-button" type="button" onClick={deleteDiaryDate} disabled={diaryFormSaving}>delete all entries for this date</button>
-                </>
-              )}
-              <button className="edit-cancel-button" type="button" onClick={() => setDiaryFormOpen(false)} disabled={diaryFormSaving}>cancel</button>
-            </form>
-          </section>
-        </div>
-      )}
 
       {!supabaseConfigured && (
         <p className="config-warning">
