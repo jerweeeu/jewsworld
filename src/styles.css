@@ -2159,10 +2159,8 @@ color: #111111;
 }
 .archive-editor-form textarea.archive-content-text-input:focus { color: #111; }
 /* Content movement/deletion controls are intentionally removed from the display. */
-.archive-item-controls, .archive-manage-row > div { display: none !important; }
 .archive-manage-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 0; border-bottom: 1px solid #efeee9; font-size: 12px; }
 .archive-manage-row > span { overflow-wrap: anywhere; }
-.archive-manage-row > div { display: flex; gap: 3px; flex-shrink: 0; }
 .archive-poster-card img { height: auto; object-fit: contain; }
 .archive-poster-card { aspect-ratio: auto; overflow: visible; }
 .archive-poster-card.is-awakening { opacity: 1; filter: grayscale(0); }
