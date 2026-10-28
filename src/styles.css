@@ -2216,3 +2216,133 @@ color: #111111;
   .archive-neighbor { width: 58px; }
   .archive-neighbor img { max-height: 22vh; }
 }
+/* Archive: Manage Content */
+.archive-manage-editor {
+  width: 100%;
+}
+
+.archive-manage-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.archive-manage-preview {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.archive-manage-preview strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.archive-manage-preview p {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.archive-manage-thumbnail {
+  display: block;
+  width: min(100%, 220px);
+  max-height: 240px;
+  object-fit: contain;
+  margin: 10px 0;
+}
+
+.archive-manage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.archive-manage-actions button {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #111;
+  font-size: 12px;
+}
+
+.archive-manage-actions button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.archive-manage-actions .archive-delete-action {
+  color: #a23d3d;
+  border-color: #e3c5c2;
+}
+/* Forum: vertical book selector */
+.forum-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 15px 40px;
+  background: #fff;
+}
+
+.book-wheel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: min(70vh, 620px);
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  scrollbar-width: none;
+}
+
+.book-wheel::-webkit-scrollbar {
+  display: none;
+}
+
+.book-wheel-row {
+  display: grid;
+  grid-template-columns: minmax(70px, 1fr) minmax(0, 3fr) minmax(70px, 1fr);
+  align-items: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: #c5c5c5;
+  text-align: center;
+  font-size: clamp(15px, 2vw, 22px);
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.book-wheel-row.is-selected {
+  color: #111;
+}
+
+.book-title {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.book-year {
+  text-align: left;
+}
+
+.book-author {
+  text-align: right;
+}
+
+.forum-book-detail {
+  min-height: 100vh;
+  min-height: 100svh;
+  background: #fff;
+}
