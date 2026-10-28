@@ -2289,44 +2289,86 @@ color: #111111;
   background: #fff;
 }
 
+/* Forum: book selection wheel */
 .book-wheel {
   display: flex;
   flex-direction: column;
   align-items: stretch;
+
   width: 100%;
-  overflow-y: auto;
+  height: min(70vh, 620px);
+  height: min(70svh, 620px);
+  min-height: 240px;
+
+  padding: 0;
+  margin: 0;
+
   overflow-x: hidden;
-  max-height: min(70vh, 620px);
+  overflow-y: auto;
+
   overscroll-behavior-y: contain;
   touch-action: pan-y;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+
   scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .book-wheel::-webkit-scrollbar {
   display: none;
 }
 
+/* 上下留白，让第一本和最后一本也能停在中间 */
+.book-wheel-spacer {
+  flex: 0 0 max(0px, calc((min(70svh, 620px) - 48px) / 2));
+  width: 100%;
+  pointer-events: none;
+}
+
+/* 每一行书名 */
 .book-wheel-row {
   display: grid;
-  grid-template-columns: minmax(70px, 1fr) minmax(0, 3fr) minmax(70px, 1fr);
+  grid-template-columns:
+    minmax(60px, 1fr)
+    minmax(0, 3fr)
+    minmax(60px, 1fr);
+
   align-items: center;
-  width: 100%;
+  flex: 0 0 48px;
   min-height: 48px;
+  height: 48px;
+  box-sizing: border-box;
+
+  width: 100%;
   padding: 0 8px;
+  margin: 0;
+
   border: 0;
+  border-radius: 0;
   background: transparent;
+
   color: #c5c5c5;
   text-align: center;
   font-size: clamp(15px, 2vw, 22px);
-  font-weight: 600;
-  transition: color 0.15s ease;
+  font-weight: 500;
+
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+
+  transition:
+    color 0.2s ease,
+    font-weight 0.2s ease;
+  cursor: pointer;
 }
 
 .book-wheel-row.is-selected {
   color: #111;
+  font-weight: 600;
 }
 
 .book-title {
+  min-width: 0;
   text-align: center;
   overflow-wrap: anywhere;
 }
