@@ -2278,111 +2278,186 @@ color: #111111;
   color: #a23d3d;
   border-color: #e3c5c2;
 }
-/* Forum: vertical book selector */
+/* Forum: fixed-center book selector */
+
 .forum-page {
-  min-height: 100vh;
-  min-height: 100svh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 15px 40px;
-  background: #fff;
+min-height: calc(100vh - 60px);
+min-height: calc(100svh - 60px);
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 24px 20px;
+background: #fff;
 }
 
-/* Forum: book selection wheel */
+.book-wheel-wrap {
+width: 100%;
+max-width: 1200px;
+min-width: 0;
+}
+
 .book-wheel {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+--book-row-height: 48px;
 
-  width: 100%;
-  height: min(70vh, 620px);
-  height: min(70svh, 620px);
-  min-height: 240px;
+display: flex;
+flex-direction: column;
+align-items: stretch;
 
-  padding: 0;
-  margin: 0;
+width: 100%;
+height: min(70vh, 620px);
+height: min(70svh, 620px);
+min-height: 240px;
 
-  overflow-x: hidden;
-  overflow-y: auto;
+padding: 0;
+margin: 0;
 
-  overscroll-behavior-y: contain;
-  touch-action: pan-y;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
+overflow-x: hidden;
+overflow-y: auto;
 
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+overscroll-behavior-y: contain;
+touch-action: pan-y;
+
+scroll-snap-type: y mandatory;
+scroll-behavior: auto;
+
+-webkit-overflow-scrolling: touch;
+scrollbar-width: none;
+-ms-overflow-style: none;
 }
 
 .book-wheel::-webkit-scrollbar {
-  display: none;
+display: none;
 }
 
-/* 上下留白，让第一本和最后一本也能停在中间 */
+/*
+上下留白高度等于可视区域的一半减去单行高度的一半。
+因此，第一本和最后一本也能停在中间。
+*/
 .book-wheel-spacer {
-  flex: 0 0 max(0px, calc((min(70svh, 620px) - 48px) / 2));
-  width: 100%;
-  pointer-events: none;
+flex: 0 0 max(
+0px,
+calc((min(70svh, 620px) - var(--book-row-height)) / 2)
+);
+width: 100%;
+pointer-events: none;
 }
 
-/* 每一行书名 */
+/* 每本书固定占据一行。 */
 .book-wheel-row {
-  display: grid;
-  grid-template-columns:
-    minmax(60px, 1fr)
-    minmax(0, 3fr)
-    minmax(60px, 1fr);
+display: grid;
+grid-template-columns:
+minmax(0, 1fr)
+minmax(0, 2fr)
+minmax(0, 1fr);
 
-  align-items: center;
-  flex: 0 0 48px;
-  min-height: 48px;
-  height: 48px;
-  box-sizing: border-box;
+align-items: center;
+flex: 0 0 var(--book-row-height);
 
-  width: 100%;
-  padding: 0 8px;
-  margin: 0;
+width: 100%;
+height: var(--book-row-height);
+min-height: var(--book-row-height);
 
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+padding: 0 8px;
+margin: 0;
 
-  color: #c5c5c5;
-  text-align: center;
-  font-size: clamp(15px, 2vw, 22px);
-  font-weight: 500;
+border: 0;
+border-radius: 0;
+background: #fff;
 
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
+color: #c5c5c5;
+font-size: clamp(12px, 1.5vw, 18px);
+font-weight: 400;
+line-height: 1.2;
 
-  transition:
-    color 0.2s ease,
-    font-weight 0.2s ease;
-  cursor: pointer;
+scroll-snap-align: start;
+scroll-snap-stop: always;
+
+transition: color 0.2s ease;
+cursor: pointer;
+
+-webkit-tap-highlight-color: transparent;
+user-select: none;
+-webkit-user-select: none;
 }
 
 .book-wheel-row.is-selected {
-  color: #111;
-  font-weight: 600;
+color: #111;
+font-weight: 600;
 }
 
-.book-title {
-  min-width: 0;
-  text-align: center;
-  overflow-wrap: anywhere;
+.book-wheel-row {
+outline: none;
 }
 
 .book-year {
-  text-align: left;
+min-width: 0;
+padding-right: 12px;
+text-align: left;
+white-space: nowrap;
+}
+
+.book-title {
+min-width: 0;
+padding: 0 8px;
+text-align: center;
+overflow-wrap: anywhere;
 }
 
 .book-author {
-  text-align: right;
+min-width: 0;
+padding-left: 12px;
+text-align: right;
+overflow-wrap: anywhere;
+}
+
+.book-wheel-empty {
+text-align: center;
+color: #999;
+font-size: 14px;
 }
 
 .forum-book-detail {
-  min-height: 100vh;
-  min-height: 100svh;
-  background: #fff;
+min-height: 100vh;
+min-height: 100svh;
+background: #fff;
+}
+
+/* 手机屏幕：缩小两侧信息占用的空间。 */
+@media (max-width: 520px) {
+.forum-page {
+padding: 20px 10px;
+}
+
+.book-wheel {
+height: min(65vh, 520px);
+height: min(65svh, 520px);
+}
+
+.book-wheel-spacer {
+flex-basis: max(
+0px,
+calc((min(65svh, 520px) - var(--book-row-height)) / 2)
+);
+}
+
+.book-wheel-row {
+grid-template-columns:
+minmax(42px, 0.8fr)
+minmax(0, 2fr)
+minmax(65px, 1fr);
+padding: 0 2px;
+font-size: 12px;
+}
+
+.book-year {
+padding-right: 4px;
+}
+
+.book-title {
+padding: 0 4px;
+}
+
+.book-author {
+padding-left: 4px;
+}
 }
