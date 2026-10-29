@@ -2625,3 +2625,142 @@ color: #111111;
   .map-city-stack { width: calc(100vw - 32px); left: 52%; }
   .map-city-title { font-size: 14px; }
 }
+
+/* MAP CARD DRAW / CYLINDER ROLLER — refined motion pass */
+.map-city-experience {
+  perspective: 1900px;
+  perspective-origin: 58% 48%;
+  overflow: hidden;
+}
+
+.map-city-title {
+  font-size: 16px !important;
+}
+
+.map-city-stack {
+  left: 65%;
+  width: clamp(390px, 53vw, 780px);
+  aspect-ratio: 1.18 / 1;
+  perspective: 1800px;
+  transform-style: preserve-3d;
+}
+
+.map-stack-card {
+  transform-origin: 50% 50%;
+  transition:
+    transform 1.08s cubic-bezier(.16, 1, .3, 1),
+    opacity .78s cubic-bezier(.2, .8, .2, 1),
+    filter .78s ease;
+  will-change: transform, opacity, filter;
+}
+
+.map-stack-card.is-active {
+  z-index: 6;
+  opacity: 1;
+  filter: none;
+  transform: translate(-50%, -50%) translateZ(150px) rotateX(0deg) rotateY(0deg) scale(1.075);
+}
+
+.map-stack-card.is-previous {
+  z-index: 4;
+  opacity: .8;
+  filter: saturate(.86) brightness(.96);
+  transform: translate(-50%, calc(-50% - 59%)) translateZ(-115px) rotateX(43deg) rotateY(-1.5deg) scale(.84);
+}
+
+.map-stack-card.is-next {
+  z-index: 3;
+  opacity: .8;
+  filter: saturate(.86) brightness(.96);
+  transform: translate(-50%, calc(-50% + 59%)) translateZ(-115px) rotateX(-43deg) rotateY(1.5deg) scale(.84);
+}
+
+.map-stack-card.is-far.is-previous {
+  z-index: 2;
+  opacity: .34;
+  filter: saturate(.65) blur(.7px);
+  transform: translate(-50%, calc(-50% - 102%)) translateZ(-300px) rotateX(63deg) scale(.67);
+}
+
+.map-stack-card.is-far.is-next {
+  z-index: 1;
+  opacity: .34;
+  filter: saturate(.65) blur(.7px);
+  transform: translate(-50%, calc(-50% + 102%)) translateZ(-300px) rotateX(-63deg) scale(.67);
+}
+
+.map-stack-card.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) translateZ(-560px) rotateX(72deg) scale(.38);
+}
+
+.map-stack-photo {
+  overflow: hidden;
+  background: #eeeee8;
+}
+
+.map-stack-photo img {
+  transition: transform 1.25s cubic-bezier(.16, 1, .3, 1), filter .8s ease;
+}
+
+.map-stack-card.is-active .map-stack-photo img {
+  transform: scale(1.025);
+}
+
+/* The extra prompt is intentionally hidden; interaction stays gesture-based. */
+.map-stack-hint,
+.map-stack-hint * {
+  display: none !important;
+}
+
+@media (max-width: 700px) {
+  .map-city-title {
+    font-size: 16px !important;
+  }
+
+  .map-city-stack {
+    top: 54%;
+    left: 52%;
+    width: min(96vw, 590px);
+    aspect-ratio: 1.12 / 1;
+  }
+
+  .map-stack-card.is-active {
+    transform: translate(-50%, -50%) translateZ(100px) rotateX(0deg) scale(1.045);
+  }
+
+  .map-stack-card.is-previous {
+    transform: translate(-50%, calc(-50% - 63%)) translateZ(-90px) rotateX(42deg) scale(.82);
+  }
+
+  .map-stack-card.is-next {
+    transform: translate(-50%, calc(-50% + 63%)) translateZ(-90px) rotateX(-42deg) scale(.82);
+  }
+
+  .map-stack-card.is-far.is-previous {
+    transform: translate(-50%, calc(-50% - 106%)) translateZ(-230px) rotateX(61deg) scale(.64);
+  }
+
+  .map-stack-card.is-far.is-next {
+    transform: translate(-50%, calc(-50% + 106%)) translateZ(-230px) rotateX(-61deg) scale(.64);
+  }
+
+  .map-stack-card.is-hidden {
+    transform: translate(-50%, -50%) translateZ(-440px) rotateX(70deg) scale(.4);
+  }
+}
+
+@media (max-width: 380px) {
+  .map-city-title { font-size: 16px !important; }
+  .map-city-stack { width: calc(100vw - 20px); left: 51%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-stack-card,
+  .map-stack-photo img,
+  .map-city-title-text {
+    transition: none !important;
+    animation: none !important;
+  }
+}
