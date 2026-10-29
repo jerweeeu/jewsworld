@@ -154,9 +154,6 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
   const [editNewFiles, setEditNewFiles] = useState([]);
   const [editNewTitles, setEditNewTitles] = useState([]);
   const [editTripSaving, setEditTripSaving] = useState(false);
-  const [activeCityIndex, setActiveCityIndex] = useState(0);
-  const touchStartY = useRef(null);
-  const cityWheelLockedUntil = useRef(0);
 
   async function loadTrips() {
 
@@ -316,42 +313,6 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
     });
     return [...grouped.values()];
   }, [trips]);
-
-  const safeActiveCityIndex = cities.length
-    ? ((activeCityIndex % cities.length) + cities.length) % cities.length
-    : 0;
-  const activeCity = cities[safeActiveCityIndex] || null;
-
-  function changeActiveCity(direction) {
-    if (cities.length < 2) return;
-    setActiveCityIndex((current) => {
-      const normalized = ((current % cities.length) + cities.length) % cities.length;
-      return (normalized + direction + cities.length) % cities.length;
-    });
-  }
-
-  function handleCityStackWheel(event) {
-    if (cities.length < 2 || Math.abs(event.deltaY) < 18) return;
-    event.preventDefault();
-    const now = Date.now();
-    if (now < cityWheelLockedUntil.current) return;
-    cityWheelLockedUntil.current = now + 760;
-    changeActiveCity(event.deltaY > 0 ? 1 : -1);
-  }
-
-  function handleCityStackTouchStart(event) {
-    touchStartY.current = event.touches?.[0]?.clientY ?? null;
-  }
-
-  function handleCityStackTouchEnd(event) {
-    if (touchStartY.current === null) return;
-    const endY = event.changedTouches?.[0]?.clientY;
-    if (typeof endY !== 'number') return;
-    const difference = touchStartY.current - endY;
-    touchStartY.current = null;
-    if (Math.abs(difference) < 35) return;
-    changeActiveCity(difference > 0 ? 1 : -1);
-  }
 
   async function searchCity() {
     if (!form.city_name.trim()) {
@@ -744,71 +705,30 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
   return (
     <main className="map-page">
       {loadingTrips && <p className="map-status">loading places…</p>}
-      <section
-        className="map-city-experience"
-        aria-label="Explore cities"
-        onWheel={handleCityStackWheel}
-        onTouchStart={handleCityStackTouchStart}
-        onTouchEnd={handleCityStackTouchEnd}
-      >
-        <div className={`map-city-title ${activeCity ? 'is-visible' : ''}`} aria-live="polite">
-          <span key={activeCity?.key || 'empty'} className="map-city-title-text">
-            {activeCity?.city_display_name || ''}
-          </span>
-        </div>
-
-        {cities.length === 0 && !loadingTrips && (
-          <p className="map-empty-state">Your cities will appear here.</p>
-        )}
-
-        {cities.length > 0 && (
-          <div className="map-city-stack" aria-label="City cards">
-            {cities.map((city, cityIndex) => {
-              let offset = cityIndex - safeActiveCityIndex;
-              if (offset > cities.length / 2) offset -= cities.length;
-              if (offset < -cities.length / 2) offset += cities.length;
-              const latestTrip = city?.trips?.[0];
-              const isActive = offset === 0;
-              const isNear = Math.abs(offset) <= 2;
-
-              return (
-                <button
-                  type="button"
-                  key={city.key}
-                  className={`map-stack-card ${isActive ? 'is-active' : ''} ${
-                    offset < 0 ? 'is-previous' : offset > 0 ? 'is-next' : ''
-                  } ${Math.abs(offset) === 2 ? 'is-far' : ''} ${!isNear ? 'is-hidden' : ''}`}
-                  style={{ '--stack-offset': offset }}
-                  tabIndex={isActive ? 0 : -1}
-                  aria-hidden={!isActive}
-                  aria-label={isActive ? `Open ${city.city_display_name}` : `${city.city_display_name}, nearby card`}
-                  onClick={() => {
-                    if (isActive) setSelectedCity(city);
-                    else setActiveCityIndex(cityIndex);
-                  }}
-                >
-                  <span className="map-stack-photo">
-                    {latestTrip?.coverUrl ? (
-                      <img
-                        src={latestTrip.coverUrl}
-                        alt=""
-                        draggable="false"
-                        loading={isActive ? 'eager' : 'lazy'}
-                      />
-                    ) : (
-                      <span className="map-stack-placeholder">
-                        {city.city_display_name?.slice(0, 1) || 'J'}
-                      </span>
-                    )}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+      <section className="travel-city-grid" aria-label="Travel cities">
+        {cities.map((city) => {
+          const latestTrip = city.trips[0];
+          return (
+            <button
+              type="button"
+              className="travel-city-card"
+              key={city.key}
+              onClick={() => setSelectedCity(city)}
+              aria-label={`Open ${city.city_display_name}, ${city.trips.length} travel records`}
+            >
+              <span className="travel-city-image">
+                {latestTrip?.coverUrl
+                  ? <img src={latestTrip.coverUrl} alt="" loading="lazy" />
+                  : <span className="travel-city-image-placeholder">{city.city_display_name.slice(0, 1)}</span>}
+              </span>
+              <span className="travel-city-card-info">
+                <span className="travel-city-name">{city.city_display_name}</span>
+              </span>
+            </button>
+          );
+        })}
       </section>
       {selectedCity && (
-
         <div className="city-panel-shade" onClick={(event) => { if (event.target === event.currentTarget) setSelectedCity(null); }}>
           <section className="city-panel" role="dialog" aria-modal="true" aria-label={`${selectedCity.city_display_name} travel records`}>
             <div className="city-panel-heading">
