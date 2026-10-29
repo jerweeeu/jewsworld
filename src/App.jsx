@@ -156,6 +156,7 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
   const [editTripSaving, setEditTripSaving] = useState(false);
   const [activeCityIndex, setActiveCityIndex] = useState(0);
   const touchStartY = useRef(null);
+  const cityWheelLockedUntil = useRef(0);
 
   async function loadTrips() {
 
@@ -332,6 +333,9 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
   function handleCityStackWheel(event) {
     if (cities.length < 2 || Math.abs(event.deltaY) < 18) return;
     event.preventDefault();
+    const now = Date.now();
+    if (now < cityWheelLockedUntil.current) return;
+    cityWheelLockedUntil.current = now + 760;
     changeActiveCity(event.deltaY > 0 ? 1 : -1);
   }
 
@@ -759,19 +763,21 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
 
         {cities.length > 0 && (
           <div className="map-city-stack" aria-label="City cards">
-            {[-1, 0, 1].map((offset) => {
-              const cityIndex = (safeActiveCityIndex + offset + cities.length) % cities.length;
-              const city = cities[cityIndex];
+            {cities.map((city, cityIndex) => {
+              let offset = cityIndex - safeActiveCityIndex;
+              if (offset > cities.length / 2) offset -= cities.length;
+              if (offset < -cities.length / 2) offset += cities.length;
               const latestTrip = city?.trips?.[0];
               const isActive = offset === 0;
+              const isNear = Math.abs(offset) <= 2;
 
               return (
                 <button
                   type="button"
-                  key={`${city.key}-${offset}`}
+                  key={city.key}
                   className={`map-stack-card ${isActive ? 'is-active' : ''} ${
                     offset < 0 ? 'is-previous' : offset > 0 ? 'is-next' : ''
-                  }`}
+                  } ${Math.abs(offset) === 2 ? 'is-far' : ''} ${!isNear ? 'is-hidden' : ''}`}
                   style={{ '--stack-offset': offset }}
                   tabIndex={isActive ? 0 : -1}
                   aria-hidden={!isActive}
@@ -798,13 +804,6 @@ function TravelMap({ supabase, isAdmin, session, setError }) {
                 </button>
               );
             })}
-          </div>
-        )}
-
-        {cities.length > 1 && (
-          <div className="map-stack-hint" aria-hidden="true">
-            <span>SCROLL TO EXPLORE</span>
-            <span className="map-stack-arrows">↑ ↓</span>
           </div>
         )}
       </section>
